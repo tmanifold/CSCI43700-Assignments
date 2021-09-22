@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>2D Graphics Demo</title>
+
+        <script>
+            var objects = [];
+
+            var x = 100;
+            var y = 100;
+            var r = 25;
+            var dx = 5;
+            var dy = 0;
+
+            const G = 2;
+
+            const CANVASX = 640;
+            const CANVASY = 480;
+
+            // add event listener to detect click events
+            // and draw a circle at the mouse location
+            // c.addEventListener('click', function(e) {
+            //     console.log(e);
+            //     ctx.beginPath();
+            //     ctx.arc(e.layerX, e.layerY, 30, 0, 2 * Math.PI);
+            //     ctx.stroke();
+            // })
+
+            function init() {
+                setInterval(draw, 50);
+            }
+
+            function draw() {
+                var c = document.getElementById("canvas");
+                var ctx = c.getContext("2d");
+
+                dy += (0.5) * G
+
+                x += dx;
+                y += dy;
+
+                // clear canvas
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0,0, 640, 480);
+
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, 2 * Math.PI);
+                ctx.stroke();
+
+                bounce();
+
+                var d = document.getElementById('stats');
+                d.innerHTML = "x: " + x + "<br />y: " + y + "<br />dx: " + dx + "<br />dy: " + dy;
+            }
+
+            function bounce() {
+                if (x > CANVASX - r) {
+                    dx *= -1;
+                }
+                if (x < 0 + r) {
+                    dx *= -1;
+                }
+                if (y > CANVASY - r) {
+                    dy *= -.80;
+                    dx *= .98;
+                    y = CANVASY - r;
+                }
+                if (y < 0 + r) {
+                    dy *= -1;
+                }
+
+                if (Math.abs(dy) < 1) dy = 0;
+
+                if (Math.abs(dx) < 1) dx = 0;
+            }
+
+        </script>
+    </head>
+
+    <body onload="init()">
+
+        <h3>2D Graphis Demo</h3>
+
+        <p id = "stats">stats</p>
+
+        <canvas id="canvas" width="640" height="480" style="border: 1px solid black"></canvas>
+
+    </body>
+
+</html>
