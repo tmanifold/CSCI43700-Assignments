@@ -6,26 +6,62 @@
         <title>2D Graphics Demo</title>
 
         <script>
-            var objects = [];
-
-            var x = 100;
-            var y = 100;
-            var r = 25;
-            var dx = 5;
-            var dy = 0;
-
             const G = 2;
+            const RADIUS = 45;
 
             const CANVASX = 640;
             const CANVASY = 480;
+            const MAX_OBJ = 10;
+
+            class circle {
+                constructor(posx, posy, radius, deltax, deltay) {
+                    this.x = posx;
+                    this.y = posy;
+                    this.r = radius;
+                    this.dx = deltax;
+                    this.dy = deltay;
+                }
+
+                bounce() {
+                    if (this.x > CANVASX - this.r) {
+                        this.dx *= -1;
+                    }
+                    if (this.x < 0 + this.r) {
+                        this.dx *= -1;
+                    }
+                    if (this.y > CANVASY - this.r) {
+                        this.dy *= -.80;
+                        this.dx *= .98;
+                        this.y = CANVASY - this.r;
+                    }
+                    if (this.y < 0 + this.r) {
+                        this.dy *= -1;
+                    }
+
+                    if (Math.abs(this.dy) < 1) this.dy = 0;
+
+                    if (Math.abs(this.dx) < 1) this.dx = 0;
+                }
+            }
+
+            var objects = [];
+            // var x = 100;
+            // var y = 100;
+            // var r = 25;
+            // var dx = 5;
+            // var dy = 0;
 
             // add event listener to detect click events
             // and draw a circle at the mouse location
             // c.addEventListener('click', function(e) {
-            //     console.log(e);
-            //     ctx.beginPath();
-            //     ctx.arc(e.layerX, e.layerY, 30, 0, 2 * Math.PI);
-            //     ctx.stroke();
+            //
+            //     // create a circle at the point location and add it
+            //     // to the list of objects
+            //     var c = new circle(e.layerX, e.layerY, RADIUS, randomInt(10), 0);
+            //     objects.push(c);
+            //     // ctx.beginPath();
+            //     // ctx.arc(e.layerX, e.layerY, 30, 0, 2 * Math.PI);
+            //     // ctx.stroke();
             // })
 
             function init() {
@@ -35,47 +71,56 @@
             function draw() {
                 var c = document.getElementById("canvas");
                 var ctx = c.getContext("2d");
-
-                dy += (0.5) * G
-
-                x += dx;
-                y += dy;
-
                 // clear canvas
                 ctx.fillStyle = 'white';
                 ctx.fillRect(0,0, 640, 480);
 
-                ctx.beginPath();
-                ctx.arc(x, y, r, 0, 2 * Math.PI);
-                ctx.stroke();
+                // redraw each circle
+                objects.forEach(item => {
+                    item.dy += (0.5) * G
 
-                bounce();
+                    item.x += item.dx;
+                    item.y += item.dy;
 
-                var d = document.getElementById('stats');
-                d.innerHTML = "x: " + x + "<br />y: " + y + "<br />dx: " + dx + "<br />dy: " + dy;
+                    ctx.beginPath();
+                    ctx.arc(item.x, item.y, item.r, 0, 2 * Math.PI);
+                    ctx.stroke();
+
+                    item.bounce();
+                });
+
+                // var d = document.getElementById('stats');
+                // d.innerHTML = "x: " + x + "<br />y: " + y + "<br />dx: " + dx + "<br />dy: " + dy;
             }
 
-            function bounce() {
-                if (x > CANVASX - r) {
-                    dx *= -1;
-                }
-                if (x < 0 + r) {
-                    dx *= -1;
-                }
-                if (y > CANVASY - r) {
-                    dy *= -.80;
-                    dx *= .98;
-                    y = CANVASY - r;
-                }
-                if (y < 0 + r) {
-                    dy *= -1;
-                }
+            // add a random circle to the objects list
+            function spawn() {
 
-                if (Math.abs(dy) < 1) dy = 0;
+                let r = randomIntRange(5, 50);
 
-                if (Math.abs(dx) < 1) dx = 0;
+                objects.push(
+                    new circle(randomIntRange(0 + r, CANVASX - r), // x position
+                               randomIntRange(0 + r, CANVASY - r), // y position
+                               r,      // radius
+                               randomInt(10),        // delta-x
+                               0)                  // delta-y
+                );
             }
 
+            // clear the objects list
+            function clear() {
+                objects = new Array();
+            }
+
+            // random int utility functions from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+            function randomInt(max) {
+                return Math.floor(Math.random() * max);
+            }
+            function randomIntRange(min, max) {
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+            }
         </script>
     </head>
 
@@ -84,6 +129,8 @@
         <h3>2D Graphis Demo</h3>
 
         <p id = "stats">stats</p>
+        <button id="btnSpawn" onclick="spawn()">Spawn circle</button>
+        <button id="btnClear" onclick="clear()">Clear</button>
 
         <canvas id="canvas" width="640" height="480" style="border: 1px solid black"></canvas>
 
