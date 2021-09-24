@@ -36,23 +36,30 @@
 /**
     Width of the canvas
     @type {number}
+    @const
 */
 const CANVASX = 640;
+
 /**
     Height of the canvas
     @type {number}
+    @const
 */
 const CANVASY = 480;
+
 /**
     The maximum number of objects on the canvas at one time
     @type {number}
+    @const
 */
 const MAX_OBJ = 10;
+
 /**
     The minimum allowed value for the components of Circle.dV
 
     When the minimum is reached, the components if Circle.dV will be set to 0.
     @type {number}
+    @const
 */
 const MIN_DELTA = 0.5; // minimum allowed dx or dy value
 
@@ -61,6 +68,7 @@ const MIN_DELTA = 0.5; // minimum allowed dx or dy value
     @type {number}
 */
 var G = 1;
+
 /**
     The amount of friction to apply to objects.
 
@@ -84,7 +92,9 @@ class Vector2 {
         @param {number} b - the component corresponding to y-value
     */
     constructor(a, b) {
+        /** @prop {number} */
         this.x = a;
+        /** @prop {number} */
         this.y = b;
     }
 
@@ -143,48 +153,76 @@ class Vector2 {
     @class
 */
 class Circle {
+    /**
+        @constructs Circle
+        @param {number} posx - x-coordinate of the center point
+        @param {number} posy - y-coordinate of the center point
+        @param {number} radius
+        @param {number} deltax - change in velocity along x-axis
+        @param {number} deltay - change in velocity along y-axis
+    */
     constructor(posx, posy, radius, deltax, deltay) {
+        /**
+            center point x-coordinate
+            @prop {number} x
+        */
         this.x = posx;
+        /**
+            center point y-coordinate
+            @prop {number} y
+        */
         this.y = posy;
+        /**
+            radius
+            @prop {number} r
+        */
         this.r = radius;
-        this.dx = deltax;
-        this.dy = deltay;
 
+        /**
+            A velocity vector
+            @prop {Vector2} dV contains (dx, dy)
+        */
         this.dV = new Vector2(deltax, deltay);
     }
 
+    /**
+        Check collisions and apply bounce affect and friction.
+    */
     bounce() {
         // right boundary check
         if (this.x > CANVASX - this.r) {
             //this.dx *= -1;
-            this.dx *= -friction;
+            this.dV.x *= -friction;
         }
         // left boundary check
         if (this.x &lt; 0 + this.r) {
             //this.dx *= -1;
-            this.dx *= -friction;
+            this.dV.x *= -friction;
         }
         // bottom boundary check
         if (this.y >= CANVASY - this.r) {
-            this.dy *= -friction;
+            this.dV.y *= -friction;
             //this.dy *= -1 * friction;
-            this.dx *= friction;
+            this.dV.x *= friction;
             //this.dx -=  friction * this.r * G;
             this.y = CANVASY - this.r;
         }
         // top boundary check
         if (this.y &lt; 0 + this.r) {
             //this.dy *= -1;
-            this.dy *= -friction;
+            this.dV.y *= -friction;
         }
 
         // if change in x or y directions drops below
-        if (Math.abs(this.dy) &lt; 1) this.dy = 0
-        if (Math.abs(this.dx) &lt; 1) this.dx = 0;
+        if (Math.abs(this.dV.y) &lt; 1) this.dy = 0
+        if (Math.abs(this.dV.x) &lt; 1) this.dx = 0;
     }
 }
 
-// list to store the objects that are to be drawn to the canvas each frame
+/**
+    Stores objects to be rendered each frame.
+    @type {Array|Circle}
+*/
 var objects = [];
 
 /**
@@ -243,10 +281,10 @@ function draw() {
     // redraw each circle
     objects.forEach(item => {
         //item.dy += (item.r / 100) * G;
-        item.dy += G;
+        item.dV.y += G;
 
-        item.x += item.dx;
-        item.y += item.dy;
+        item.x += item.dV.x;
+        item.y += item.dV.y;
 
         ctx.beginPath();
         ctx.arc(item.x, item.y, item.r, 0, 2 * Math.PI);
@@ -259,7 +297,9 @@ function draw() {
     // d.innerHTML = "x: " + x + "&lt;br />y: " + y + "&lt;br />dx: " + dx + "&lt;br />dy: " + dy;
 }
 
-// add a random circle to the objects list
+/**
+    Generates a random circle object and adds it to the objects list.
+*/
 function spawn() {
 
     let r = randomIntRange(5, 50);
@@ -275,15 +315,28 @@ function spawn() {
     console.log(objects);
 }
 
-// clear the objects list and repaint the canvas
+/**
+    Clears the objects list
+*/
 function clearScreen() {
     objects.length = 0;
 }
 
-// random int utility functions from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+/**
+    Get a random integer between 0 and max. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+    @param {number} max - The maximum value
+    @return {number}
+*/
 function randomInt(max) {
     return Math.floor(Math.random() * max);
 }
+
+/**
+    Get a random integer between min and max. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+    @param {number} min - the minimum value
+    @param {number} max - The maximum value
+    @return {number}
+*/
 function randomIntRange(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -299,13 +352,13 @@ function randomIntRange(min, max) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Circle.html">Circle</a></li><li><a href="Vector2.html">Vector2</a></li></ul><h3>Global</h3><ul><li><a href="global.html#CANVASX">CANVASX</a></li><li><a href="global.html#CANVASY">CANVASY</a></li><li><a href="global.html#draw">draw</a></li><li><a href="global.html#friction">friction</a></li><li><a href="global.html#G">G</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#MAX_OBJ">MAX_OBJ</a></li><li><a href="global.html#MIN_DELTA">MIN_DELTA</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Circle.html">Circle</a></li><li><a href="Vector2.html">Vector2</a></li></ul><h3>Global</h3><ul><li><a href="global.html#CANVASX">CANVASX</a></li><li><a href="global.html#CANVASY">CANVASY</a></li><li><a href="global.html#clearScreen">clearScreen</a></li><li><a href="global.html#draw">draw</a></li><li><a href="global.html#friction">friction</a></li><li><a href="global.html#G">G</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#MAX_OBJ">MAX_OBJ</a></li><li><a href="global.html#MIN_DELTA">MIN_DELTA</a></li><li><a href="global.html#objects">objects</a></li><li><a href="global.html#randomInt">randomInt</a></li><li><a href="global.html#randomIntRange">randomIntRange</a></li><li><a href="global.html#spawn">spawn</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Fri Sep 24 2021 13:15:16 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Fri Sep 24 2021 14:15:34 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

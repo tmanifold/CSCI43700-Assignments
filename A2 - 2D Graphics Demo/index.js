@@ -8,23 +8,30 @@
 /**
     Width of the canvas
     @type {number}
+    @const
 */
 const CANVASX = 640;
+
 /**
     Height of the canvas
     @type {number}
+    @const
 */
 const CANVASY = 480;
+
 /**
     The maximum number of objects on the canvas at one time
     @type {number}
+    @const
 */
 const MAX_OBJ = 10;
+
 /**
     The minimum allowed value for the components of Circle.dV
 
     When the minimum is reached, the components if Circle.dV will be set to 0.
     @type {number}
+    @const
 */
 const MIN_DELTA = 0.5; // minimum allowed dx or dy value
 
@@ -33,6 +40,7 @@ const MIN_DELTA = 0.5; // minimum allowed dx or dy value
     @type {number}
 */
 var G = 1;
+
 /**
     The amount of friction to apply to objects.
 
@@ -56,7 +64,9 @@ class Vector2 {
         @param {number} b - the component corresponding to y-value
     */
     constructor(a, b) {
+        /** @prop {number} */
         this.x = a;
+        /** @prop {number} */
         this.y = b;
     }
 
@@ -124,17 +134,32 @@ class Circle {
         @param {number} deltay - change in velocity along y-axis
     */
     constructor(posx, posy, radius, deltax, deltay) {
-        /** @member {number} x*/
+        /**
+            center point x-coordinate
+            @prop {number} x
+        */
         this.x = posx;
-        /** @member {number} y*/
+        /**
+            center point y-coordinate
+            @prop {number} y
+        */
         this.y = posy;
-        /** @member {number} r*/
+        /**
+            radius
+            @prop {number} r
+        */
         this.r = radius;
 
-        /** @member {Vector2} dV*/
+        /**
+            A velocity vector
+            @prop {Vector2} dV contains (dx, dy)
+        */
         this.dV = new Vector2(deltax, deltay);
     }
 
+    /**
+        Check collisions and apply bounce affect and friction.
+    */
     bounce() {
         // right boundary check
         if (this.x > CANVASX - this.r) {
@@ -166,7 +191,10 @@ class Circle {
     }
 }
 
-// list to store the objects that are to be drawn to the canvas each frame
+/**
+    Stores objects to be rendered each frame.
+    @type {Array|Circle}
+*/
 var objects = [];
 
 /**
@@ -241,7 +269,9 @@ function draw() {
     // d.innerHTML = "x: " + x + "<br />y: " + y + "<br />dx: " + dx + "<br />dy: " + dy;
 }
 
-// add a random circle to the objects list
+/**
+    Generates a random circle object and adds it to the objects list.
+*/
 function spawn() {
 
     let r = randomIntRange(5, 50);
@@ -257,15 +287,28 @@ function spawn() {
     console.log(objects);
 }
 
-// clear the objects list and repaint the canvas
+/**
+    Clears the objects list
+*/
 function clearScreen() {
     objects.length = 0;
 }
 
-// random int utility functions from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+/**
+    Get a random integer between 0 and max. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+    @param {number} max - The maximum value
+    @return {number}
+*/
 function randomInt(max) {
     return Math.floor(Math.random() * max);
 }
+
+/**
+    Get a random integer between min and max. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+    @param {number} min - the minimum value
+    @param {number} max - The maximum value
+    @return {number}
+*/
 function randomIntRange(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
