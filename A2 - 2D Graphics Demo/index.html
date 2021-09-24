@@ -6,12 +6,12 @@
         <title>2D Graphics Demo</title>
 
         <script>
-            const G = 2;
+            //const G = 2; // gravity
             const RADIUS = 45;
-
+            //const Fr = 0.95; // friction
             const CANVASX = 640;
             const CANVASY = 480;
-            const MAX_OBJ = 10;
+            const MAX_OBJ = 10; // max number of objects on screen
 
             class circle {
                 constructor(posx, posy, radius, deltax, deltay) {
@@ -23,61 +23,69 @@
                 }
 
                 bounce() {
+                    // right boundary check
                     if (this.x > CANVASX - this.r) {
                         this.dx *= -1;
                     }
+                    // left boundary check
                     if (this.x < 0 + this.r) {
                         this.dx *= -1;
                     }
-                    if (this.y > CANVASY - this.r) {
-                        this.dy *= -.80;
-                        this.dx *= .98;
+                    // bottom boundary check
+                    if (this.y >= CANVASY - this.r) {
+                        this.dy *= -1
+
+                        this.dx *= friction;
+                        //this.dx -=  friction * this.r * G;
                         this.y = CANVASY - this.r;
                     }
+                    // top boundary check
                     if (this.y < 0 + this.r) {
                         this.dy *= -1;
                     }
 
-                    if (Math.abs(this.dy) < 1) this.dy = 0;
+                    if (Math.abs(this.dy) < 0) this.dy = 0;
 
-                    if (Math.abs(this.dx) < 1) this.dx = 0;
+                    if (Math.abs(this.dx) < 0) this.dx = 0;
                 }
             }
 
             var objects = [];
-            // var x = 100;
-            // var y = 100;
-            // var r = 25;
-            // var dx = 5;
-            // var dy = 0;
-
-            // add event listener to detect click events
-            // and draw a circle at the mouse location
-            // c.addEventListener('click', function(e) {
-            //
-            //     // create a circle at the point location and add it
-            //     // to the list of objects
-            //     var c = new circle(e.layerX, e.layerY, RADIUS, randomInt(10), 0);
-            //     objects.push(c);
-            //     // ctx.beginPath();
-            //     // ctx.arc(e.layerX, e.layerY, 30, 0, 2 * Math.PI);
-            //     // ctx.stroke();
-            // })
 
             function init() {
                 setInterval(draw, 50);
+
+                // event listener to update slider text
+                var g = document.getElementById("rngGravity");
+                g.innerHTML = g.value;
+                g.addEventListener("change", function(e) {
+                        g.innerHTML = g.value;
+                });
+
+                var f = document.getElementById("rngFriction");
+                f.innerHTML = f.value;
+                f.addEventListener("change", function(e) {
+                        f.innerHTML = f.value;
+                });
+
+                friction = 1 - f.value;
             }
 
             function draw() {
                 var c = document.getElementById("canvas");
                 var ctx = c.getContext("2d");
+
+                G = parseInt(document.getElementById("rngGravity").value);
+                friction = parseInt(document.getElementById("rngFriction").value);
+
                 // clear canvas
                 ctx.fillStyle = 'white';
                 ctx.fillRect(0,0, 640, 480);
 
                 // redraw each circle
                 objects.forEach(item => {
-                    item.dy += (0.5) * G
+                    //item.dy += (item.r / 100) * G;
+                    item.dy += G;
 
                     item.x += item.dx;
                     item.y += item.dy;
@@ -100,16 +108,18 @@
 
                 objects.push(
                     new circle(randomIntRange(0 + r, CANVASX - r), // x position
-                               randomIntRange(0 + r, CANVASY - r), // y position
+                               randomIntRange(0 + r, CANVASY - 100), // y position
                                r,      // radius
-                               randomInt(10),        // delta-x
-                               0)                  // delta-y
+                               randomIntRange(-10, 10),        // delta-x
+                               randomIntRange(-10,10))                  // delta-y
                 );
+
+                console.log(objects);
             }
 
-            // clear the objects list
-            function clear() {
-                objects = new Array();
+            // clear the objects list and repaint the canvas
+            function clearScreen() {
+                objects.length = 0;
             }
 
             // random int utility functions from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
@@ -128,11 +138,21 @@
 
         <h3>2D Graphis Demo</h3>
 
-        <p id = "stats">stats</p>
-        <button id="btnSpawn" onclick="spawn()">Spawn circle</button>
-        <button id="btnClear" onclick="clear()">Clear</button>
+        <div id="demo">
+            <canvas id="canvas" width="640" height="480" style="border: 1px solid black; float: left;"></canvas>
 
-        <canvas id="canvas" width="640" height="480" style="border: 1px solid black"></canvas>
+            <div id="controls" style="float:left; margin-left: 10px; border: 1px solid grey; padding: 10px;">
+                <p>Controls</p><br />
+                <button id="btnSpawn" onclick="spawn()">Spawn circle</button>
+                <button id="btnClear" onclick="clearScreen()">Clear</button>
+                <br />
+                <label for="rngGravity">G</label>
+                <input id="rngGravity" type="range" min="0" max="10" value="2"></input>
+                <br />
+                <label for="rngFriction">&#119891;</label>
+                <input id="rngFriction" type="range" min="0" max="0.5" step="0.01" value="0.05"></input>
+            </div>
+        </div>
 
     </body>
 
