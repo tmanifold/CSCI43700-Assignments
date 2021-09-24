@@ -5,133 +5,7 @@
         <meta charset="utf-8">
         <title>2D Graphics Demo</title>
 
-        <script>
-            //const G = 2; // gravity
-            const RADIUS = 45;
-            //const Fr = 0.95; // friction
-            const CANVASX = 640;
-            const CANVASY = 480;
-            const MAX_OBJ = 10; // max number of objects on screen
-
-            class circle {
-                constructor(posx, posy, radius, deltax, deltay) {
-                    this.x = posx;
-                    this.y = posy;
-                    this.r = radius;
-                    this.dx = deltax;
-                    this.dy = deltay;
-                }
-
-                bounce() {
-                    // right boundary check
-                    if (this.x > CANVASX - this.r) {
-                        this.dx *= -1;
-                    }
-                    // left boundary check
-                    if (this.x < 0 + this.r) {
-                        this.dx *= -1;
-                    }
-                    // bottom boundary check
-                    if (this.y >= CANVASY - this.r) {
-                        this.dy *= -1
-
-                        this.dx *= friction;
-                        //this.dx -=  friction * this.r * G;
-                        this.y = CANVASY - this.r;
-                    }
-                    // top boundary check
-                    if (this.y < 0 + this.r) {
-                        this.dy *= -1;
-                    }
-
-                    if (Math.abs(this.dy) < 0) this.dy = 0;
-
-                    if (Math.abs(this.dx) < 0) this.dx = 0;
-                }
-            }
-
-            var objects = [];
-
-            function init() {
-                setInterval(draw, 50);
-
-                // event listener to update slider text
-                var g = document.getElementById("rngGravity");
-                g.innerHTML = g.value;
-                g.addEventListener("change", function(e) {
-                        g.innerHTML = g.value;
-                });
-
-                var f = document.getElementById("rngFriction");
-                f.innerHTML = f.value;
-                f.addEventListener("change", function(e) {
-                        f.innerHTML = f.value;
-                });
-
-                friction = 1 - f.value;
-            }
-
-            function draw() {
-                var c = document.getElementById("canvas");
-                var ctx = c.getContext("2d");
-
-                G = parseInt(document.getElementById("rngGravity").value);
-                friction = parseInt(document.getElementById("rngFriction").value);
-
-                // clear canvas
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0,0, 640, 480);
-
-                // redraw each circle
-                objects.forEach(item => {
-                    //item.dy += (item.r / 100) * G;
-                    item.dy += G;
-
-                    item.x += item.dx;
-                    item.y += item.dy;
-
-                    ctx.beginPath();
-                    ctx.arc(item.x, item.y, item.r, 0, 2 * Math.PI);
-                    ctx.stroke();
-
-                    item.bounce();
-                });
-
-                // var d = document.getElementById('stats');
-                // d.innerHTML = "x: " + x + "<br />y: " + y + "<br />dx: " + dx + "<br />dy: " + dy;
-            }
-
-            // add a random circle to the objects list
-            function spawn() {
-
-                let r = randomIntRange(5, 50);
-
-                objects.push(
-                    new circle(randomIntRange(0 + r, CANVASX - r), // x position
-                               randomIntRange(0 + r, CANVASY - 100), // y position
-                               r,      // radius
-                               randomIntRange(-10, 10),        // delta-x
-                               randomIntRange(-10,10))                  // delta-y
-                );
-
-                console.log(objects);
-            }
-
-            // clear the objects list and repaint the canvas
-            function clearScreen() {
-                objects.length = 0;
-            }
-
-            // random int utility functions from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
-            function randomInt(max) {
-                return Math.floor(Math.random() * max);
-            }
-            function randomIntRange(min, max) {
-                min = Math.ceil(min);
-                max = Math.floor(max);
-                return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
-            }
-        </script>
+        <script type="text/javascript" src="./index.js"></script>
     </head>
 
     <body onload="init()">
@@ -147,10 +21,13 @@
                 <button id="btnClear" onclick="clearScreen()">Clear</button>
                 <br />
                 <label for="rngGravity">G</label>
-                <input id="rngGravity" type="range" min="0" max="10" value="2"></input>
+                <input id="rngGravity" type="range" min="0" max="10" value="1"></input>
+                <label id="gravityValue">gravity</label>
                 <br />
                 <label for="rngFriction">&#119891;</label>
                 <input id="rngFriction" type="range" min="0" max="0.5" step="0.01" value="0.05"></input>
+                <label id="frictionValue" class="sliderValue">friction</label>
+
             </div>
         </div>
 
