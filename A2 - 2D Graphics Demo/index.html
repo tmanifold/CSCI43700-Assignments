@@ -16,7 +16,11 @@
             <canvas id="canvas" width="640" height="480" style="border: 1px solid black; float: left;"></canvas>
 
             <div id="controls" style="float:left; margin-left: 10px; border: 1px solid grey; padding: 10px;">
-                <p>Controls</p><br />
+                <br />Controls<br />
+                <hr>
+                Objects: <label id="numObjectsLabel">0</label>/<label id="maxObjectsLabel">?</label>
+                <br /><br />
+
                 <button id="btnSpawn">Spawn circle</button>
                 <button id="btnClear">Clear</button>
                 <br />
@@ -28,7 +32,7 @@
                 <input id="rngFriction" type="range" min="0" max="0.5" step="0.01" value="0.05"></input>
                 <label id="frictionValue" class="sliderValue">friction</label>
                 <br />
-                <input type="checkbox" id="chkShowVelocity">Show velocity vectors</input><br />
+                <input type="checkbox" id="chkShowVelocity" checked>Show velocity vectors</input><br />
                 <hr>
                 !! Dangerous stuff !!<br />
                 <input type="checkbox" id="chkAllowObjectCollisions">Allow object collisions</input><br />

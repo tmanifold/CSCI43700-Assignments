@@ -33,7 +33,7 @@ const g_nMAX_OBJ = 10;
     @type {number}
     @const
 */
-const g_nMIN_DELTA = 0.5; // minimum allowed dx or dy value
+const g_nMIN_DELTA = 0.5;
 
 /**
     The amount of gravity to apply to objects
@@ -240,8 +240,8 @@ class Circle {
         }
 
         // if change in x or y directions drops below 1, just halt the object
-        if (Math.abs(this.dV.y) < 1) this.dy = 0
-        if (Math.abs(this.dV.x) < 1) this.dx = 0;
+        if (Math.abs(this.dV.y) < g_nMIN_DELTA) this.dy = 0
+        if (Math.abs(this.dV.x) < g_nMIN_DELTA) this.dx = 0;
     }
 }
 
@@ -264,7 +264,9 @@ function init() {
 
     // spawn button
     document.getElementById("btnSpawn").addEventListener("click", function(e) {
-        if (objects.length < g_nMAX_OBJ) {
+        if (objects.length < g_nMAX_OBJ && !g_bDisableObjectLimit) {
+            spawnCircle();
+        } else if (g_bDisableObjectLimit) {
             spawnCircle();
         }
     });
@@ -275,6 +277,12 @@ function init() {
     });
 
     // end buttons
+
+    // initialize objects counter
+
+    document.getElementById("maxObjectsLabel").innerHTML = g_nMAX_OBJ;
+
+    // end objects counter
 
     // initialize gravity controls
 
@@ -307,17 +315,32 @@ function init() {
     // end friction controls
 
     // vector controls
-    document.getElementById("chkShowVelocity").addEventListener("input", function(e) {
+    let showVelocity = document.getElementById("chkShowVelocity");
+    showVelocity.addEventListener("input", function(e) {
         g_bDrawVelocityVectors = this.checked;
     });
+    g_bDrawVelocityVectors = showVelocity.checked;
     // end vector controls
 
     // danger zone controls
 
-    document.getElementById("chkAllowObjectCollisions").addEventListener("input", function(e) {
+    let allowCollisions = document.getElementById("chkAllowObjectCollisions");
+    allowCollisions.addEventListener("input", function(e) {
         g_bAllowObjectCollisions = this.checked;
     });
+    g_bAllowObjectCollisions = allowCollisions.checked;
 
+    let disableObjLim = document.getElementById("chkDisableObjectLimit");
+    disableObjLim.addEventListener("input", function(e) {
+        g_bDisableObjectLimit = this.checked;
+
+        // reset objects list to the max length
+        if (!g_bDisableObjectLimit && objects.length > g_nMAX_OBJ) {
+            objects.length = g_nMAX_OBJ;
+        }
+    });
+
+    g_bDisableObjectLimit = disableObjLim.checked;
     // end danger zone controls
 
 }
@@ -367,6 +390,18 @@ function draw() {
         item.bounce();
     });
 
+    // update object counter
+
+    document.getElementById("numObjectsLabel").innerHTML = objects.length;
+
+    let maxObjectsLabel = document.getElementById("maxObjectsLabel");
+
+    if (g_bDisableObjectLimit) {
+        maxObjectsLabel.innerHTML = "?";
+    } else {
+        maxObjectsLabel.innerHTML = g_nMAX_OBJ;
+    }
+
     // var d = document.getElementById('stats');
     // d.innerHTML = "x: " + x + "<br />y: " + y + "<br />dx: " + dx + "<br />dy: " + dy;
 }
@@ -394,6 +429,25 @@ function spawnCircle() {
 */
 function clearRenderList() {
     objects.length = 0;
+}
+
+/**
+    Check if objects in the list are colliding with one another
+*/
+function checkCollisions() {
+    // split the canvas into quadrants and only check against objects in the same quadrant
+    // this might still be kind of expensive, but should be much faster than always checking against every single object
+    // collision checks only need to happen in one direction. for example, if checking if object A is colliding with object B
+    // is the same as checking if B is colliding with A, therefore the second check isn't necessary
+
+    // check top-left quadrant
+
+
+    // check top right quadrant
+
+    // check bottom right quadrant
+
+    // check bottom left quadrant
 }
 
 /**
