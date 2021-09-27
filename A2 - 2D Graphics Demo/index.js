@@ -10,21 +10,21 @@
     @type {number}
     @const
 */
-const CANVASX = 640;
+const g_nCANVAS_X = 640;
 
 /**
     Height of the canvas
     @type {number}
     @const
 */
-const CANVASY = 480;
+const g_nCANVAS_Y = 480;
 
 /**
     The maximum number of objects on the canvas at one time
     @type {number}
     @const
 */
-const MAX_OBJ = 10;
+const g_nMAX_OBJ = 10;
 
 /**
     The minimum allowed value for the components of Circle.dV
@@ -33,13 +33,13 @@ const MAX_OBJ = 10;
     @type {number}
     @const
 */
-const MIN_DELTA = 0.5; // minimum allowed dx or dy value
+const g_nMIN_DELTA = 0.5; // minimum allowed dx or dy value
 
 /**
     The amount of gravity to apply to objects
     @type {number}
 */
-var G = 1;
+var g_nGravity = 1;
 
 /**
     The amount of friction to apply to objects.
@@ -48,7 +48,27 @@ var G = 1;
     the object's velocity until it comes to rest.
     @type {number}
 */
-var friction = 0.95;
+var g_nFriction = 0.95;
+
+/**
+    Whether or not to draw velocity vectors on objects
+    @type {boolean}
+*/
+var g_bDrawVelocityVectors = false;
+
+/**
+    Allows detection of collisions between objects. This can get really expensive
+    and should probably never be turned on
+    @type {boolean}
+*/
+var g_bAllowObjectCollisions = false;
+
+/**
+    Disables the max object limit. This can get dangerously expensive.
+    Set g_bAllowObjectCollisions = false with this option.
+    @type {boolean}
+*/
+var g_bDisableObjectLimit = false;
 
 /**
     Constructs a Vector2.
@@ -77,8 +97,9 @@ class Vector2 {
         @return {vector2|null} The updated vector or null if an error occurs.
     */
     add(v) {
-
         try {
+            this.validateVector2(v);
+
             // component add
             this.x += v.x;
             this.y += v.y;
@@ -91,14 +112,26 @@ class Vector2 {
     }
 
     /**
+        Multiplies vector components by the given scalar.
+        @param {number} n - A scalar to be applied to the vector.
+        @return {Vector2} The scaled vector
+    */
+    scale(n) {
+        this.x *= n;
+        this.y *= n;
+
+        return this;
+    }
+
+    /**
         Compute the dot product of this vector and another vector.
 
         @param {Vector2} v - The vector to dot with this one.
         @return {number|null} The dot product or null if an error occurs.
     */
     dotProduct(v) {
-
         try {
+            this.validateVector2(v);
             return (this.x * v.x) + (this.y + v.y);
         } catch (e) {
             console.log(e);
@@ -112,7 +145,7 @@ class Vector2 {
         @param {Vector2} v - The object to validate
         @throws {TypeError} Thrown if v is not a Vector2
     */
-    validate(v) {
+    validateVector2(v) {
         // Perform a sanity check to ensure
         if (!(v instanceof Vector2)) {
             throw new TypeError('Parameter must be a Vector2.');
@@ -159,33 +192,54 @@ class Circle {
 
     /**
         Check collisions and apply bounce affect and friction.
+
+        @description Checks edge collisions by comparing the circle's
+        (x,y) position with the edges of the canvas relative to the circle's
+        radius.m
+
+
     */
     bounce() {
         // right boundary check
-        if (this.x > CANVASX - this.r) {
+        if (this.x > g_nCANVAS_X - this.r) {
             //this.dx *= -1;
-            this.dV.x *= -friction;
+            this.dV.x *= -1;
+            this.dV.scale(g_nFriction);
+            // this.dV.x *= -g_nFriction;
+            // this.dV.y *= g_nFriction;
+
+            this.x = g_nCANVAS_X - this.r;
         }
         // left boundary check
-        if (this.x < 0 + this.r) {
-            //this.dx *= -1;
-            this.dV.x *= -friction;
+        if (this.x < this.r) {
+            this.dV.x *= -1;
+            this.dV = this.dV.scale(g_nFriction);
+            //this.dV.x *= -g_nFriction;
+            //this.dV.y *= g_nFriction;
+
+            this.x = this.r;
         }
         // bottom boundary check
-        if (this.y >= CANVASY - this.r) {
-            this.dV.y *= -friction;
-            //this.dy *= -1 * friction;
-            this.dV.x *= friction;
-            //this.dx -=  friction * this.r * G;
-            this.y = CANVASY - this.r;
+        if (this.y > g_nCANVAS_Y - this.r) {
+            this.dV.y *= -1;
+            this.dV.scale(g_nFriction);
+            // this.dV.y *= -g_nFriction;
+            // this.dV.x *= g_nFriction;
+            //this.dx -=  g_nFriction * this.r * g_nGravity;
+
+            this.y = g_nCANVAS_Y - this.r;
         }
         // top boundary check
-        if (this.y < 0 + this.r) {
-            //this.dy *= -1;
-            this.dV.y *= -friction;
+        if (this.y < this.r) {
+            this.dV.dy *= -1;
+            this.dV.scale(g_nFriction);
+            // this.dV.y *= -g_nFriction;
+            // this.dV.x *= g_nFriction;
+
+            this.y = this.r;
         }
 
-        // if change in x or y directions drops below
+        // if change in x or y directions drops below 1, just halt the object
         if (Math.abs(this.dV.y) < 1) this.dy = 0
         if (Math.abs(this.dV.x) < 1) this.dx = 0;
     }
@@ -198,14 +252,31 @@ class Circle {
 var objects = [];
 
 /**
-    Initialize the rendering environment
+    @summary Initialize the rendering environment
 
-    Sets the draw interval for the canvas and initializes the values
-    of G and friction
+    @description Sets the draw interval for the canvas. Sets up event handlers for controls and initializes globals variables
 */
 function init() {
     // initialize the draw interval
     setInterval(draw, 50);
+
+    // initialize clear and spawn buttons
+
+    // spawn button
+    document.getElementById("btnSpawn").addEventListener("click", function(e) {
+        if (objects.length < g_nMAX_OBJ) {
+            spawnCircle();
+        }
+    });
+
+    // clear button
+    document.getElementById("btnClear").addEventListener("click", function(e) {
+        clearRenderList();
+    });
+
+    // end buttons
+
+    // initialize gravity controls
 
     let g = document.getElementById("rngGravity");
     let gravLabel = document.getElementById("gravityValue");
@@ -214,20 +285,32 @@ function init() {
             gravLabel.innerHTML = g.value;
     });
 
-    G = parseInt(g.value);
-    gravLabel.innerHTML = G;
+    g_nGravity = parseInt(g.value);
+    gravLabel.innerHTML = g_nGravity;
+
+    // end gravity controls
+
+    // initialize friction controls
 
     let f = document.getElementById("rngFriction");
     let fricLabel = document.getElementById("frictionValue");
 
     f.addEventListener("input", function(e) {
             fricLabel.innerHTML = f.value;
-            friction = 1 - parseFloat(f.value);
+            g_nFriction = 1 - parseFloat(f.value);
             //console.log(friction);
     });
 
-    friction = 1 - parseFloat(f.value);
+    g_nFriction = 1 - parseFloat(f.value);
     fricLabel.innerHTML = f.value;
+
+    // end friction controls
+
+    // vector controls
+    document.getElementById("chkShowVelocity").addEventListener("input", function(e) {
+        g_bDrawVelocityVectors = this.checked;
+    });
+    // end vector controls
 }
 
 /**
@@ -240,20 +323,20 @@ function draw() {
     var grav = document.getElementById("rngGravity");
     var fric = document.getElementById("rngFriction");
 
-    G = parseInt(grav.value);
-    friction = 1 - parseFloat(fric.value);
+    g_nGravity = parseInt(grav.value);
+    g_nFriction = 1 - parseFloat(fric.value);
 
     grav.innerHTML = grav.value;
     fric.innerHTML = fric.value;
 
     // clear canvas
     ctx.fillStyle = 'white';
-    ctx.fillRect(0,0, 640, 480);
+    ctx.fillRect(0,0, g_nCANVAS_X, g_nCANVAS_Y);
 
     // redraw each circle
     objects.forEach(item => {
-        //item.dy += (item.r / 100) * G;
-        item.dV.y += G;
+        //item.dy += (item.r / 100) * g_nGravity;
+        item.dV.y += g_nGravity;
 
         item.x += item.dV.x;
         item.y += item.dV.y;
@@ -272,13 +355,13 @@ function draw() {
 /**
     Generates a random circle object and adds it to the objects list.
 */
-function spawn() {
+function spawnCircle() {
 
     let r = randomIntRange(5, 50);
 
     objects.push(
-        new Circle(randomIntRange(0 + r, CANVASX - r), // x position
-                   randomIntRange(0 + r, CANVASY - 100), // y position
+        new Circle(randomIntRange(0 + r, g_nCANVAS_X - r), // x position
+                   randomIntRange(0 + r, g_nCANVAS_Y - 100), // y position
                    r,      // radius
                    randomIntRange(-15, 15),        // delta-x
                    randomIntRange(-15,15))                  // delta-y
@@ -290,7 +373,7 @@ function spawn() {
 /**
     Clears the objects list
 */
-function clearScreen() {
+function clearRenderList() {
     objects.length = 0;
 }
 
