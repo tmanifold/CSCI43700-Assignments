@@ -231,7 +231,7 @@ class Circle {
         }
         // top boundary check
         if (this.y < this.r) {
-            this.dV.dy *= -1;
+            this.dV.y *= -1;
             this.dV.scale(g_nFriction);
             // this.dV.y *= -g_nFriction;
             // this.dV.x *= g_nFriction;
@@ -311,6 +311,15 @@ function init() {
         g_bDrawVelocityVectors = this.checked;
     });
     // end vector controls
+
+    // danger zone controls
+
+    document.getElementById("chkAllowObjectCollisions").addEventListener("input", function(e) {
+        g_bAllowObjectCollisions = this.checked;
+    });
+
+    // end danger zone controls
+
 }
 
 /**
@@ -341,9 +350,19 @@ function draw() {
         item.x += item.dV.x;
         item.y += item.dV.y;
 
+        ctx.strokeStyle = "black";
         ctx.beginPath();
         ctx.arc(item.x, item.y, item.r, 0, 2 * Math.PI);
         ctx.stroke();
+
+        // draw velocity vectors for each object
+        if (g_bDrawVelocityVectors) {
+            ctx.strokeStyle = "green";
+            ctx.beginPath();
+            ctx.moveTo(item.x, item.y);
+            ctx.lineTo(item.x + item.dV.x * 2, item.y + item.dV.y * 2);
+            ctx.stroke();
+        }
 
         item.bounce();
     });
