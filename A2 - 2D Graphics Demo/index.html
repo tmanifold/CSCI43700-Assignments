@@ -21,21 +21,36 @@
                 Objects: <label id="numObjectsLabel">0</label>/<label id="maxObjectsLabel">?</label>
                 <br /><br />
 
+                <!-- buttons -->
                 <button id="btnSpawn">Spawn circle</button>
                 <button id="btnClear">Clear</button>
                 <br />
+
+                <!-- Object properties -->
+
+                <!-- radius -->
+                <label for="rngRadius">r</label>
+                <input id="rngRadius" type="range" min="1" max="100" value="50"></input>
+                <label id="radiusValue">radius</label>
+                <br />
+
+                <!-- end object properties -->
+
+                <!-- global physics properties  -->
+
+                <!-- gravity -->
                 <label for="rngGravity">G</label>
-                <input id="rngGravity" type="range" min="0" max="10" value="1"></input>
+                <input id="rngGravity" type="range" min="0" max="10" value="1" step="0.1"></input>
                 <label id="gravityValue">gravity</label>
                 <br />
+                <!-- friction  -->
                 <label for="rngFriction">&#119891;</label>
                 <input id="rngFriction" type="range" min="0" max="0.5" step="0.01" value="0.05"></input>
                 <label id="frictionValue" class="sliderValue">friction</label>
                 <br />
+                <!-- End global physics properties -->
+
                 <input type="checkbox" id="chkShowVelocity" checked>Show velocity vectors</input><br />
-                <hr>
-                !! Dangerous stuff !!<br />
-                <input type="checkbox" id="chkAllowObjectCollisions">Allow object collisions</input><br />
                 <input type="checkbox" id="chkDisableObjectLimit">Disable object limit</input>
                 <hr>
                 <a href="out/index.html">Documentation</a> | <a href="https://github.com/tmanifold/CSCI43700-Assignments/tree/main/A2%20-%202D%20Graphics%20Demo">GitHub</a>

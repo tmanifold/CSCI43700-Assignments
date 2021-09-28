@@ -195,18 +195,13 @@ class Circle {
 
         @description Checks edge collisions by comparing the circle's
         (x,y) position with the edges of the canvas relative to the circle's
-        radius.m
-
-
+        radius.
     */
     bounce() {
         // right boundary check
         if (this.x > g_nCANVAS_X - this.r) {
-            //this.dx *= -1;
             this.dV.x *= -1;
             this.dV.scale(g_nFriction);
-            // this.dV.x *= -g_nFriction;
-            // this.dV.y *= g_nFriction;
 
             this.x = g_nCANVAS_X - this.r;
         }
@@ -214,8 +209,6 @@ class Circle {
         if (this.x < this.r) {
             this.dV.x *= -1;
             this.dV = this.dV.scale(g_nFriction);
-            //this.dV.x *= -g_nFriction;
-            //this.dV.y *= g_nFriction;
 
             this.x = this.r;
         }
@@ -223,9 +216,6 @@ class Circle {
         if (this.y > g_nCANVAS_Y - this.r) {
             this.dV.y *= -1;
             this.dV.scale(g_nFriction);
-            // this.dV.y *= -g_nFriction;
-            // this.dV.x *= g_nFriction;
-            //this.dx -=  g_nFriction * this.r * g_nGravity;
 
             this.y = g_nCANVAS_Y - this.r;
         }
@@ -233,8 +223,6 @@ class Circle {
         if (this.y < this.r) {
             this.dV.y *= -1;
             this.dV.scale(g_nFriction);
-            // this.dV.y *= -g_nFriction;
-            // this.dV.x *= g_nFriction;
 
             this.y = this.r;
         }
@@ -284,6 +272,14 @@ function init() {
 
     // end objects counter
 
+    // initialize object properties
+    let r = document.getElementById("rngRadius");
+    let rLabel = document.getElementById("radiusValue");
+    r.addEventListener("input", function(e) {
+        rLabel.innerHTML = this.value;
+    });
+    rLabel.innerHTML = r.value;
+
     // initialize gravity controls
 
     let g = document.getElementById("rngGravity");
@@ -323,12 +319,6 @@ function init() {
     // end vector controls
 
     // danger zone controls
-
-    let allowCollisions = document.getElementById("chkAllowObjectCollisions");
-    allowCollisions.addEventListener("input", function(e) {
-        g_bAllowObjectCollisions = this.checked;
-    });
-    g_bAllowObjectCollisions = allowCollisions.checked;
 
     let disableObjLim = document.getElementById("chkDisableObjectLimit");
     disableObjLim.addEventListener("input", function(e) {
@@ -401,9 +391,6 @@ function draw() {
     } else {
         maxObjectsLabel.innerHTML = g_nMAX_OBJ;
     }
-
-    // var d = document.getElementById('stats');
-    // d.innerHTML = "x: " + x + "<br />y: " + y + "<br />dx: " + dx + "<br />dy: " + dy;
 }
 
 /**
@@ -411,7 +398,7 @@ function draw() {
 */
 function spawnCircle() {
 
-    let r = randomIntRange(5, 50);
+    let r = parseInt(document.getElementById("rngRadius").value);
 
     objects.push(
         new Circle(randomIntRange(0 + r, g_nCANVAS_X - r), // x position
@@ -429,25 +416,6 @@ function spawnCircle() {
 */
 function clearRenderList() {
     objects.length = 0;
-}
-
-/**
-    Check if objects in the list are colliding with one another
-*/
-function checkCollisions() {
-    // split the canvas into quadrants and only check against objects in the same quadrant
-    // this might still be kind of expensive, but should be much faster than always checking against every single object
-    // collision checks only need to happen in one direction. for example, if checking if object A is colliding with object B
-    // is the same as checking if B is colliding with A, therefore the second check isn't necessary
-
-    // check top-left quadrant
-
-
-    // check top right quadrant
-
-    // check bottom right quadrant
-
-    // check bottom left quadrant
 }
 
 /**
