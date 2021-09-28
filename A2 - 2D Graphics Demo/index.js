@@ -289,7 +289,7 @@ function init() {
             gravLabel.innerHTML = g.value;
     });
 
-    g_nGravity = parseInt(g.value);
+    g_nGravity = parseFloat(g.value);
     gravLabel.innerHTML = g_nGravity;
 
     // end gravity controls
