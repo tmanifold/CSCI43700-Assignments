@@ -345,7 +345,7 @@ function draw() {
     var grav = document.getElementById("rngGravity");
     var fric = document.getElementById("rngFriction");
 
-    g_nGravity = parseInt(grav.value);
+    g_nGravity = parseFloat(grav.value);
     g_nFriction = 1 - parseFloat(fric.value);
 
     grav.innerHTML = grav.value;
