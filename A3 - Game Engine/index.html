@@ -5,16 +5,24 @@
         <meta charset="utf-8">
         <title>Game Engine Demo</title>
 
-        <script type="text/javascript" src="./index.js"></script>
+        <script type="text/javascript" src="./js/engine.js"></script>
+
+        <script type="text/javascript">
+
+            function init() {
+                scene = new Scene("demo");
+            }
+
+        </script>
+
+
     </head>
 
     <body onload="init()">
 
         <h3> Game Engine Demo</h3>
 
-        <div id="demo">
-            <canvas id="canvas" width="640" height="480" style="border: 1px solid black; float: left;"></canvas>
-        </div>
+        <div id="demo" style="border: 1px solid red; padding:10px;"></div>
 
     </body>
 
