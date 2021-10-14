@@ -14,12 +14,13 @@ class Scene {
     */
     constructor(target, width = 640, height = 480) {
         // initialize and create a canvas element in the page and get 2d context
-        /** @prop _canvas - the canvas element in the page */
+        /** @prop {object} _canvas - the canvas element in the page */
         this._canvas = document.createElement('canvas');
         this._canvas.style.border = "1px solid grey";
 
         this.setSize(width, height);
 
+        /** @prop {object} _target - reference to the element the canvas should be created in. */
         this._target = document.getElementById(target);
 
         if (!this._target) {
@@ -28,15 +29,78 @@ class Scene {
             this._target.appendChild(this._canvas);
         }
 
-        /** @prop _context - the 2d context for the canvas object */
+        /** @prop {object} _context - the 2d context for the canvas object */
         this._context = this._canvas.getContext('2d');
+
+        /** @prop {Sprite[]} sprites - list of sprites in the scene */
+        this.sprites = [];
+
+        /** @prop {number} framerate=50 - framerate for the scene. */
+        this._framerate = 50;
     }
 
+    /**
+        Clear the canvas by overwriting it with white
+    */
+    clear() {
+        this._context.clearRect(0, 0, this._width, this._height);
+    }
+
+    /** Sets the update delate for the scene.
+        @prop {number} d - integer specifying the framerate.
+    */
+    setDelay(d) {
+        this._delay = d;
+    }
+
+    /**
+        Sets the size of the canvas object.
+
+        @param {number} width - width in pixels
+        @param {number} height - height in pixels
+    */
     setSize(width, height) {
         /** @prop {number} width - canvas width in pixels*/
         this._canvas.width = width;
         /** @prop {number} height - canvas height in pixels*/
         this._canvas.height = height;
+    }
+
+    /**
+        Set the background color for the canvas
+
+        @param {string} color
+    */
+    setBgColor(color) {
+        this._canvas.style.backgroundColor = color;
+    }
+
+    /**
+        Starts a scene. Initializes the keyboard and mouse, then calls setInterval
+         using this.updateLocal and this._delay
+    */
+    start() {
+
+        // initialize keyboard
+
+        // initialize mouse
+
+        // start frames
+        this._intervalId = setInterval(this.updateLocal, this._delay);
+    }
+
+    /**
+        Stop the scene.
+    */
+    end() {
+        clearInterval(this._intervalId);
+    }
+
+    /**
+        Run once per frame. Calls a user defined update() function.
+    */
+    updateLocal() {
+        update();
     }
 
 } // end Scene

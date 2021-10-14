@@ -7,8 +7,9 @@ Creates and manages the canvas
 - size
 - position
 - sprites[]
-- background
-- framerate
+- bgColor
+- bgImage
+- delay
 - timer
 - keyState[]
 
@@ -21,7 +22,7 @@ Creates and manages the canvas
 - update()
 - setBgColor(color)
 - setBgImage(image)
-- setFramerate()
+- setDelay()
 - show/hide cursor()
 - getMousePosition()
 
