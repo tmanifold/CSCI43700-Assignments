@@ -1,4 +1,4 @@
-
+'use strict';
 /**
     Constructs a Scene.
 
@@ -35,8 +35,8 @@ class Scene {
         /** @prop {Sprite[]} sprites - list of sprites in the scene */
         this.sprites = [];
 
-        /** @prop {number} framerate=50 - framerate for the scene. */
-        this._framerate = 50;
+        /** @prop {number} delay=50 - update interval delay for the scene. */
+        this._delay = 50;
     }
 
     /**
@@ -80,8 +80,12 @@ class Scene {
          using this.updateLocal and this._delay
     */
     start() {
-
         // initialize keyboard
+        /** @prop {number[]} keyState - array of keystates indicating if a key is pressed */
+        this._keyState = new Array(256).fill(false);
+
+        document.onkeydown = this.updateKeyState;
+        document.onkeyup = this.resetKeyState;
 
         // initialize mouse
 
@@ -94,6 +98,24 @@ class Scene {
     */
     end() {
         clearInterval(this._intervalId);
+    }
+
+    /**
+        Record a keypress
+        @param {Event} e - Triggering keydown event
+    */
+    updateKeyState(e) {
+        this._keyState[e.key] = true;
+        console.log(e.key);
+    }
+
+    /**
+        Reset a key to unpressed
+        @param {Event} e - Triggering keyup event
+    */
+    resetKeyState(e) {
+        this._keyState[e.key] = false;
+        console.log(e.key);
     }
 
     /**
