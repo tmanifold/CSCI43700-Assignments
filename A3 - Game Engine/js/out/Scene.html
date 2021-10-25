@@ -208,7 +208,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line8">line 8</a>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line9">line 9</a>
     </li></ul></dd>
     
 
@@ -350,7 +350,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line18">line 18</a>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line19">line 19</a>
     </li></ul></dd>
     
 
@@ -460,7 +460,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line33">line 33</a>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line34">line 34</a>
     </li></ul></dd>
     
 
@@ -478,7 +478,7 @@
 
         
             
-<h4 class="name" id="_framerate"><span class="type-signature"></span>_framerate<span class="type-signature"></span></h4>
+<h4 class="name" id="_delay"><span class="type-signature"></span>_delay<span class="type-signature"></span></h4>
 
 
 
@@ -517,7 +517,7 @@
 
         <tr>
             
-                <td class="name"><code>framerate</code></td>
+                <td class="name"><code>delay</code></td>
             
 
             <td class="type">
@@ -539,7 +539,7 @@
                 </td>
             
 
-            <td class="description last">framerate for the scene.</td>
+            <td class="description last">update interval delay for the scene.</td>
         </tr>
 
     
@@ -578,7 +578,117 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line39">line 39</a>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="_keyState"><span class="type-signature"></span>_keyState<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>_keyState</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object.&lt;string, boolean></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">dictionary of keystates indicating if a key is pressed</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line86">line 86</a>
     </li></ul></dd>
     
 
@@ -688,79 +798,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line24">line 24</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="framerate"><span class="type-signature"></span>framerate<span class="type-signature"> :number</span></h4>
-
-
-
-
-<div class="description">
-    framerate
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">number</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line52">line 52</a>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line25">line 25</a>
     </li></ul></dd>
     
 
@@ -870,7 +908,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line36">line 36</a>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line37">line 37</a>
     </li></ul></dd>
     
 
@@ -891,6 +929,319 @@
 
     
         <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="clear"><span class="type-signature"></span>clear<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Clear the canvas by overwriting it with white
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line46">line 46</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="end"><span class="type-signature"></span>end<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Stop the scene.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line100">line 100</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="resetKeyState"><span class="type-signature"></span>resetKeyState<span class="signature">(e)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Reset a key to unpressed
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>e</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Event</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Triggering keyup event</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line116">line 116</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         
             
@@ -999,7 +1350,147 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line78">line 78</a>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line75">line 75</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setDelay"><span class="type-signature"></span>setDelay<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Sets the update delate for the scene.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>d</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">integer specifying the clock update delate.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line53">line 53</a>
     </li></ul></dd>
     
 
@@ -1159,7 +1650,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line66">line 66</a>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line63">line 63</a>
     </li></ul></dd>
     
 
@@ -1203,7 +1694,8 @@
 
 
 <div class="description">
-    Starts a scene.
+    Starts a scene. Initializes the keyboard and mouse, then calls setInterval
+         using this.updateLocal and this._delay
 </div>
 
 
@@ -1247,7 +1739,144 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line85">line 85</a>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line83">line 83</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="updateKeyState"><span class="type-signature"></span>updateKeyState<span class="signature">(e)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Record a keypress
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>e</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Event</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Triggering keydown event</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line108">line 108</a>
     </li></ul></dd>
     
 
@@ -1335,7 +1964,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line96">line 96</a>
+        <a href="engine.js.html">engine.js</a>, <a href="engine.js.html#line124">line 124</a>
     </li></ul></dd>
     
 
@@ -1387,7 +2016,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Thu Oct 14 2021 15:51:59 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Mon Oct 25 2021 14:42:28 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
