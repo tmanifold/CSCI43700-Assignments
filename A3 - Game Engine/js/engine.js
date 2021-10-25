@@ -36,6 +36,32 @@ class Mouse {
     }
 }
 
+class Keyboard {
+    constructor() {
+        /** @prop {Object.<string, boolean>} _keyState - dictionary of keystates indicating if a key is pressed */
+        this._keyState = {};
+        document.onkeydown = this.updateKeyState.bind(this);
+        document.onkeyup = this.resetKeyState.bind(this);
+    }
+
+    /**
+        Record a keypress
+        @param {Event} e - Triggering keydown event
+    */
+    updateKeyState(e) {
+        this._keyState[e.key] = true;
+        console.log(e.key, this._keyState[e.key]);
+    }
+    /**
+        Reset a key to unpressed
+        @param {Event} e - Triggering keyup event
+    */
+    resetKeyState(e) {
+        this._keyState[e.key] = false;
+        console.log(e.key, this._keyState[e.key]);
+    }
+}
+
 /**
     Constructs a Scene.
 
@@ -54,6 +80,11 @@ class Scene {
         /** @prop {object} _canvas - the canvas element in the page */
         this._canvas = document.createElement('canvas');
         this._canvas.style.border = "1px solid grey";
+
+        // stop context menu on canvas
+        this._canvas.oncontextmenu = (e) => {
+            e.preventDefault();
+        }
 
         this.setSize(width, height);
 
@@ -118,10 +149,7 @@ class Scene {
     */
     start() {
         // initialize keyboard
-        /** @prop {Object.<string, boolean>} _keyState - dictionary of keystates indicating if a key is pressed */
-        this._keyState = {};
-        document.onkeydown = this.updateKeyState.bind(this);
-        document.onkeyup = this.resetKeyState.bind(this);
+        this._keyboard = new Keyboard();
 
         // initialize mouse
         this._mouse = new Mouse();
@@ -135,23 +163,6 @@ class Scene {
     */
     end() {
         clearInterval(this._intervalId);
-    }
-
-    /**
-        Record a keypress
-        @param {Event} e - Triggering keydown event
-    */
-    updateKeyState(e) {
-        this._keyState[e.key] = true;
-        console.log(e.key, this._keyState[e.key]);
-    }
-    /**
-        Reset a key to unpressed
-        @param {Event} e - Triggering keyup event
-    */
-    resetKeyState(e) {
-        this._keyState[e.key] = false;
-        console.log(e.key, this._keyState[e.key]);
     }
 
     /**
