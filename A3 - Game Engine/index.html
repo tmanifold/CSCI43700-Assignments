@@ -15,10 +15,17 @@
                 scene.setBgColor('grey');
 
                 scene.start();
+
+                t = new Timer(() => {
+                    console.log("timer done.");
+                }, 10 * 1000);
+
+                t.start();
             }
 
             function update() {
-
+                t.update();
+                document.getElementById("timer").innerHTML = t.time;
             }
 
         </script>
@@ -29,6 +36,8 @@
     <body onload="init()">
 
         <h3> Game Engine Demo</h3>
+
+        Timer: <label id="timer">time</label>
 
         <div id="demo" style="border: 1px solid red; padding:10px;"></div>
 

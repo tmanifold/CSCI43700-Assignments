@@ -34,7 +34,7 @@ class Mouse {
         this._buttons = e.buttons;
         console.log(this._buttons);
     }
-}
+} // end Mouse
 
 class Keyboard {
     constructor() {
@@ -60,7 +60,69 @@ class Keyboard {
         this._keyState[e.key] = false;
         console.log(e.key, this._keyState[e.key]);
     }
+} // end Keyboard
+
+class Stopwatch {
+    constructor() {
+        this._elapsed = 0;
+    }
+
+    start() {
+        this._start = new Date();
+    }
+
+    stop() {
+        this._elapsed += new Date() - this._start;
+    }
+
+    clear() {
+        this._elapsed = 0;
+    }
+
+    tick() {
+        return this._elapsed;
+    }
 }
+
+class Timer {
+    constructor(callback, delay) {
+        this._callback = callback;
+        this._isPaused = false;
+        this._delay = delay;
+    }
+
+    get time() {
+        return this._delay;
+    }
+
+    start() {
+        this._startTime = new Date();
+        this._id = setTimeout(this._callback, this._delay);
+    }
+
+    stop() {
+        clearInterval(this._id);
+    }
+
+    pause() {
+        this.stop();
+        //this._remainingTime -= new Date() - this._startTime;
+        this.update();
+        this._isPaused = true;
+    }
+
+    unpause() {
+        if (this._isPaused) {
+            this.start();
+
+            this._isPaused = false;
+        }
+    }
+
+    update() {
+        this._delay = new Date() - this._startTime;
+    }
+} // end Timer
 
 /**
     Constructs a Scene.
@@ -154,6 +216,13 @@ class Scene {
         // initialize mouse
         this._mouse = new Mouse();
 
+        // testing Timer
+        this._timer = new Timer(() => {
+            console.log("timer complete");
+        }, 10 * 1000);
+
+        this._timer.start();
+
         // start frames
         this._intervalId = setInterval(this.updateLocal, this._delay);
     }
@@ -187,10 +256,3 @@ class Sound {
     }
 
 } // end Sound
-
-class Timer {
-    constructor() {
-
-    }
-
-} // end Timer
