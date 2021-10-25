@@ -1,5 +1,41 @@
 'use strict';
 
+class Mouse {
+    constructor() {
+        this._x = 0;
+        this._y = 0;
+        this._clicked = false;
+        this._down = false;
+        this._buttons = {};
+
+        document.onmousemove = this.updatePosition.bind(this);
+        document.onmousedown = this.updateButtonState.bind(this);
+        document.onmouseup   = this.updateButtonState.bind(this);
+    }
+
+    x() {
+        return this._x;
+    }
+
+    y() {
+        return this._y;
+    }
+
+    getPos() {
+        return new Vector2(this._x, this._y);
+    }
+
+    updatePosition(e) {
+        this._x = e.pageX;
+        this._y = e.pageY;
+    }
+
+    updateButtonState(e) {
+        this._buttons = e.buttons;
+        console.log(this._buttons);
+    }
+}
+
 /**
     Constructs a Scene.
 
@@ -84,11 +120,11 @@ class Scene {
         // initialize keyboard
         /** @prop {Object.<string, boolean>} _keyState - dictionary of keystates indicating if a key is pressed */
         this._keyState = {};
-
         document.onkeydown = this.updateKeyState.bind(this);
         document.onkeyup = this.resetKeyState.bind(this);
 
         // initialize mouse
+        this._mouse = new Mouse();
 
         // start frames
         this._intervalId = setInterval(this.updateLocal, this._delay);
