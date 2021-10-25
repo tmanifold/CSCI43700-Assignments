@@ -11,7 +11,7 @@ class Vector2 {
         @param {number} a - the component corresponding to x-value
         @param {number} b - the component corresponding to y-value
     */
-    constructor(a, b) {
+    constructor(a=0, b=0) {
         /** @prop {number} */
         this.x = a;
         /** @prop {number} */
