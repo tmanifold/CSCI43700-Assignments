@@ -92,21 +92,22 @@ class Timer {
     }
 
     get time() {
-        return this._delay;
+        let t = this._endTime - Date.now();
+        return (t > 0) ? t : 0;
     }
 
     start() {
-        this._startTime = new Date();
+        this._startTime = Date.now();
+        this._endTime = this._startTime + this._delay;
         this._id = setTimeout(this._callback, this._delay);
     }
 
     stop() {
-        clearInterval(this._id);
+        clearTimeout(this._id);
     }
 
     pause() {
         this.stop();
-        //this._remainingTime -= new Date() - this._startTime;
         this.update();
         this._isPaused = true;
     }
@@ -114,13 +115,8 @@ class Timer {
     unpause() {
         if (this._isPaused) {
             this.start();
-
             this._isPaused = false;
         }
-    }
-
-    update() {
-        this._delay = new Date() - this._startTime;
     }
 } // end Timer
 
