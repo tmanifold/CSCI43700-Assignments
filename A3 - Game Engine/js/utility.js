@@ -26,7 +26,7 @@ class Vector2 {
     */
     addWith(v) {
         try {
-            this.validateVector2(v);
+            Vector2.validate(v);
 
             // component add
             this.x += v.x;
@@ -59,7 +59,7 @@ class Vector2 {
     */
     dotWith(v) {
         try {
-            this.validateVector2(v);
+            Vector2.validate(v);
             return (this.x * v.x) + (this.y + v.y);
         } catch (e) {
             console.log(e);
@@ -88,7 +88,7 @@ class Vector2 {
         @param {...Vector2} vx - additional vectors
     */
     static add(v1, v2, ...vx) {
-        Vector2.validateVector2(v1, v2, ...vx);
+        Vector2.validate(v1, v2, ...vx);
 
         let temp = v1.addWith(v2);
 
@@ -107,7 +107,7 @@ class Vector2 {
     */
     static dotProduct(v1, v1) {
         try {
-            Vector2.validateVector2(v1, v2);
+            Vector2.validate(v1, v2);
             return (v1.x * v2.x) + (v1.y * v2.y);
         } catch (e) {
             console.log(e);
@@ -121,7 +121,7 @@ class Vector2 {
         @param {...Vector2} vx - vectors to validate
         @throws {TypeError} Thrown if v is not a Vector2
     */
-    static validateVector2(...vx) {
+    static validate(...vx) {
 
         for (const v in vx) {
             if (!(v instanceof Vector2)) {
