@@ -68,56 +68,82 @@ class Stopwatch {
     }
 
     start() {
-        this._start = new Date();
+        this._start = Date.now();
     }
 
     stop() {
-        this._elapsed += new Date() - this._start;
+        this._elapsed += Date.now() - this._start;
     }
 
     clear() {
         this._elapsed = 0;
     }
 
-    tick() {
+    get time() {
         return this._elapsed;
     }
 }
 
+/**
+    Executes the specified callback after the delay in ms.
+    @class
+*/
 class Timer {
+    /**
+        Constructs a Timer.
+        @param callback
+        @param {number} delay - how long to wait in ms before executing callback
+    */
     constructor(callback, delay) {
+        /** @callback _callback - callback function */
         this._callback = callback;
+        /** @prop {boolean} _isPaused - Flag indicating if the timer is paused. */
         this._isPaused = false;
+        /** @prop {number} _delay - how long to wait in ms */
         this._delay = delay;
     }
 
+    // TODO: Make this work properly
+
+    /**
+        @prop {number} time - the remaining time
+    */
     get time() {
-        let t = this._endTime - Date.now();
-        return (t > 0) ? t : 0;
+        if (!this._isPaused) {
+            let t = this._endTime - Date.now();
+            return (t > 0) ? t : 0;
+        } else {
+            return this._delay;
+        }
     }
 
+    /**
+        Start the timer
+    */
     start() {
+        if (this._isPaused) this._isPaused = false;
+
         this._startTime = Date.now();
         this._endTime = this._startTime + this._delay;
         this._id = setTimeout(this._callback, this._delay);
     }
 
+    /**
+        Stop the timer and cancel scheduled callback
+    */
     stop() {
         clearTimeout(this._id);
     }
 
+    /**
+        Pause the Timer, maintaining remaining time.
+    */
     pause() {
         this.stop();
-        this.update();
+        this._delay -= this._endTime - Date.now();
         this._isPaused = true;
     }
 
-    unpause() {
-        if (this._isPaused) {
-            this.start();
-            this._isPaused = false;
-        }
-    }
 } // end Timer
 
 /**
@@ -240,9 +266,60 @@ class Scene {
 } // end Scene
 
 class Sprite {
-    constructor() {
 
+    static BOUND_ACTION = {
+        WRAP,
+        BOUNCE,
+        DESTROY
     }
+
+    constructor(img, scene, width=10, height=10, x=0, y=0) {
+        this._scene = scene;
+        this._canvas = scene._canvas;
+        this._ctx = this._canvas.getContext('2d');
+
+        this._image = new Image();
+        this._image.src = img;
+        this._width = width;
+        this._height = height;
+
+        this._pos = new Vector2(x, y);
+        this._velocity = new Vector2();
+        this._accel = new Vector2();
+
+        this._imageAngle = 0;
+        this._moveAngle  = 0;
+        this._visible = true;
+        this._boundAction = Sprite.BOUND_ACTION.WRAP;
+    }
+
+    setImage(img) {
+        this._image.src = img;
+    }
+
+    set X(x) { this._pos.x = x }
+    get X() { return this._pos.x; }
+    set Y(y) { this._pos.y = y; }
+    get Y() { return this._pos.y; }
+
+    setPosition(x, y) {
+        this._pos.x = x;
+        this._pox.y = y;
+    }
+
+    /**
+        Shift by x and y pixels relative to current position.
+        @param {number} x - amount in x direction
+        @param {number} y - amount in y direction.
+        @return {Vector2} the new positon
+    */
+    translate(x, y) {
+
+        this.setX(x)
+    }
+
+
+
 
 } // end Sprite
 
