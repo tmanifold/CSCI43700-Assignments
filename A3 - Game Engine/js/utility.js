@@ -24,7 +24,7 @@ class Vector2 {
         @param {Vector2} v - The vector to add to this one.
         @return {vector2|null} The updated vector or null if an error occurs.
     */
-    add(v) {
+    addWith(v) {
         try {
             this.validateVector2(v);
 
@@ -57,7 +57,7 @@ class Vector2 {
         @param {Vector2} v - The vector to dot with this one.
         @return {number|null} The dot product or null if an error occurs.
     */
-    dotProduct(v) {
+    dotWith(v) {
         try {
             this.validateVector2(v);
             return (this.x * v.x) + (this.y + v.y);
@@ -68,15 +68,66 @@ class Vector2 {
     }
 
     /**
+        @prop {number} magnitude - The length of the vector
+    */
+    get magnitude() {
+        return Math.sqrt((this.x ** 2) + (this.y ** 2))
+    }
+
+    /**
+        @prop {number} angle - Vector angle to x-axis in radians
+    */
+    get angle() {
+        return Math.atan2(this.y, this.x);
+    }
+
+    /**
+        Add the components of the specified vectors
+        @param {Vector2} v1
+        @param {Vector2} v2
+        @param {...Vector2} vx - additional vectors
+    */
+    static add(v1, v2, ...vx) {
+        Vector2.validateVector2(v1, v2, ...vx);
+
+        let temp = v1.addWith(v2);
+
+        for (const v of vx) temp.addWith(v);
+
+        return temp;
+
+    }
+
+    /**
+        Compute the dot product of the two given vectors
+
+        @param {Vector2} v1
+        @param {Vector2} v2
+        @return {number|null} The dot product or null if an error occurs.
+    */
+    static dotProduct(v1, v1) {
+        try {
+            Vector2.validateVector2(v1, v2);
+            return (v1.x * v2.x) + (v1.y * v2.y);
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    /**
         Validates that the given parameter is a Vector2
 
-        @param {Vector2} v - The object to validate
+        @param {...Vector2} vx - vectors to validate
         @throws {TypeError} Thrown if v is not a Vector2
     */
-    _validateVector2(v) {
-        // Perform a sanity check to ensure
-        if (!(v instanceof Vector2)) {
-            throw new TypeError('Parameter must be a Vector2.');
+    static validateVector2(...vx) {
+
+        for (const v in vx) {
+            if (!(v instanceof Vector2)) {
+                throw new TypeError(`${v} must be a Vector2.`);
+            }
         }
+
     }
 }
