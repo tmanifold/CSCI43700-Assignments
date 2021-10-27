@@ -296,6 +296,8 @@ class Sprite {
         this._width = width;
         this._height = height;
 
+        console.log(this._width, this._height)
+
         this._pos = new Vector2(x, y);
         this._velocity = new Vector2();
         this._accel = new Vector2();
@@ -326,27 +328,8 @@ class Sprite {
         Change position to the givent x/y coordinates
         @param {number} x
         @param {number} y
-        @return {Vector2} The new position vector
     */
-    setPosition(x, y) {
-        this._pos.x = x;
-        this._pox.y = y;
-
-        return this._pos;
-    }
-
-    /**
-        Draw self on the canvas.
-        This should probably never be called by the user. This should only be
-        called from the Sprite's update() function.
-    */
-    draw() {
-        this._ctx.save();
-        this._ctx.translate(this._pos.x, this._pos.y);
-        this._ctx.rotate(this._imageAngle);
-        this._ctx.drawImage(this._image, -(this._width / 2), -(this._height / 2), this._width, this._height);
-        this._ctx.restore();
-    }
+    setPosition(x, y) { this._pos = new Vector2(x, y); }
 
     /**
         Shift by x and y pixels relative to current position.
@@ -431,19 +414,71 @@ class Sprite {
     setBoundAction(action) { this._boundAction = action; }
 
     checkBounds() {
+        //console.log(this._pos);
         switch (this.boundAction) {
             case Sprite.BOUND_ACTION.WRAP:
-                if (this._pos.x > this._scene.size['width']) {
-                    this._pos.x = this.width;
+                // check right and left
+                if (this._pos.x > this._scene.width) {
+                    this._pos.x = this._width / 2;
+                } else if (this._pos.x < 0) {
+                    this._pos.x = this._scene.width - this._width / 2;
+                }
+                // check top and botton
+                if (this._pos.y > this._scene.height) {
+                    this._pos.y = this._height / 2;
+
+                } else if (this._pos.y < 0) {
+                    this._pos.y = this._scene.height - this._height / 2;
                 }
                 break;
             case Sprite.BOUND_ACTION.BOUNCE:
+                // check left and right
+                if (this._pos.x > this._scene.width) {
+
+                } else if (this._pos.x < 0) {
+
+                }
+                // check top and botton
+                if (this._pos.y > this._scene.height) {
+
+                } else if (this._pos.y < 0) {
+
+                }
                 break;
             case Sprite.BOUND_ACTION.DESTROY:
+                // check left and right
+                if (this._pos.x > this._scene.width) {
+
+                } else if (this._pos.x < 0) {
+
+                }
+                // check top and botton
+                if (this._pos.y > this._scene.height) {
+
+                } else if (this._pos.y < 0) {
+
+                }
                 break;
             default:
                 break;
         }
+    }
+
+    /**
+        Draw self on the canvas.
+        This should probably never be called by the user. This should only be
+        called from the Sprite's update() function.
+    */
+    draw() {
+        this._ctx.save();
+
+        this._ctx.translate(this._pos.x, this._pos.y);
+        this._ctx.rotate(this._imageAngle);
+        this._ctx.drawImage(this._image, -(this._width / 2), -(this._height / 2), this._width, this._height);
+
+        this._ctx.strokeRect(-(this._width / 2), -(this._height / 2), this._width, this._height);
+
+        this._ctx.restore();
     }
 
     update() {
