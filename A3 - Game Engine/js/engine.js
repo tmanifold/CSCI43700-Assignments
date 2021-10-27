@@ -1,53 +1,48 @@
 'use strict';
 
 const validateType = (type, ...args) => {
-    for (const v of vx) {
-        if (!(v instanceof Vector2)) {
-            throw new TypeError(`${v} must be of type: ${type}`);
+    for (const arg of args) {
+        if (!(arg instanceof type)) {
+            throw new TypeError(`${arg} must be of type: ${type}`);
         }
     }
 }
 
 class Mouse {
-    constructor() {
+    constructor(scene) {
         this._x = 0;
         this._y = 0;
-        this._clicked = false;
-        this._down = false;
         this._buttons = {};
+        this._visible = true;
+        this._scene = scene;
 
         document.onmousemove = this.updatePosition.bind(this);
         document.onmousedown = this.updateButtonState.bind(this);
         document.onmouseup   = this.updateButtonState.bind(this);
     }
 
-    x() {
-        return this._x;
-    }
+    get x() { return this._x; }
 
-    y() {
-        return this._y;
-    }
+    get y() { return this._y; }
 
-    getPos() {
-        return new Vector2(this._x, this._y);
-    }
+    getPos() { return new Vector2(this._x, this._y); }
 
     updatePosition(e) {
         this._x = e.pageX;
         this._y = e.pageY;
     }
 
-    updateButtonState(e) {
-        this._buttons = e.buttons;
-        console.log(this._buttons);
-    }
+    updateButtonState(e) { this._buttons = e.buttons; }
+
+    hide() { this._visible = false; }
+    show() { this._visible = true; }
 } // end Mouse
 
 class Keyboard {
-    constructor() {
+    constructor(scene) {
         /** @prop {Object.<string, boolean>} _keyState - dictionary of keystates indicating if a key is pressed */
         this._keyState = {};
+        this._scene = scene;
         document.onkeydown = this.updateKeyState.bind(this);
         document.onkeyup = this.resetKeyState.bind(this);
     }
@@ -56,40 +51,24 @@ class Keyboard {
         Record a keypress
         @param {Event} e - Triggering keydown event
     */
-    updateKeyState(e) {
-        this._keyState[e.key] = true;
-        console.log(e.key, this._keyState[e.key]);
-    }
+    updateKeyState(e) { this._keyState[e.key] = true; }
     /**
         Reset a key to unpressed
         @param {Event} e - Triggering keyup event
     */
-    resetKeyState(e) {
-        this._keyState[e.key] = false;
-        console.log(e.key, this._keyState[e.key]);
-    }
+    resetKeyState(e) { this._keyState[e.key] = false; }
 } // end Keyboard
 
 class Stopwatch {
-    constructor() {
-        this._elapsed = 0;
-    }
+    constructor() { this._elapsed = 0; }
 
-    start() {
-        this._start = Date.now();
-    }
+    start() { this._start = Date.now(); }
 
-    stop() {
-        this._elapsed += Date.now() - this._start;
-    }
+    stop() { this._elapsed += Date.now() - this._start; }
 
-    clear() {
-        this._elapsed = 0;
-    }
+    clear() { this._elapsed = 0; }
 
-    get time() {
-        return this._elapsed;
-    }
+    get time() { return this._elapsed; }
 }
 
 /**
@@ -174,9 +153,7 @@ class Scene {
         this._canvas.style.border = "1px solid grey";
 
         // stop context menu on canvas
-        this._canvas.oncontextmenu = (e) => {
-            e.preventDefault();
-        }
+        this._canvas.oncontextmenu = (e) => { e.preventDefault(); }
 
         this.setSize(width, height);
 
@@ -193,16 +170,11 @@ class Scene {
         this._context = this._canvas.getContext('2d');
 
         /** @prop {Sprite[]} sprites - list of sprites in the scene */
-        this.sprites = [];
+        this._sprites = [];
 
         /** @prop {number} delay=50 - update interval delay for the scene. */
         this._delay = 50;
     }
-
-    /**
-        Clear the canvas by overwriting it with white
-    */
-    clear() { this._context.clearRect(0, 0, this._width, this._height); }
 
     /** Sets the update delate for the scene.
         @prop {number} d - integer specifying the clock update delate.
@@ -237,13 +209,12 @@ class Scene {
         this._canvas.height = height;
     }
 
-    getSize() { return [this._canvas.width, this._canvas.height]; }
+    getSize() { return {width: this._canvas.width, height: this._canvas.height}; }
 
     set backColor(color) { this.setBgColor(color); }
 
     /**
         Set the background color for the canvas
-
         @param {string} color
     */
     setBgColor(color) { this._canvas.style.backgroundColor = color; }
@@ -253,18 +224,11 @@ class Scene {
          using this.updateLocal and this._delay
     */
     start() {
-        // initialize keyboard
         this._keyboard = new Keyboard();
-
-        // initialize mouse
         this._mouse = new Mouse();
 
-        // testing Timer
-        this._timer = new Timer(() => {
-            console.log("timer complete");
-        }, 10 * 1000);
-
-        this._timer.start();
+        this._stopwatch = new Stopwatch();
+        this._stopwatch.start();
 
         // start frames
         this._intervalId = setInterval(this.updateLocal, this._delay);
@@ -273,15 +237,20 @@ class Scene {
     /** Stop the scene. */
     end() { clearInterval(this._intervalId); }
 
+    /** Clear the canvas by overwriting it with white */
+    clear() { this._context.clearRect(0, 0, this._canvas.width, this._canvas.height); }
+
     /** Run once per frame. Calls a user defined update() function. */
-    updateLocal() { update(); }
+    updateLocal() {
+        update();
+    }
 
     get sprites() { return this._sprites; }
     set sprites(sp) { this.setSprites(sp); }
 
     setSprites(sp) {
         try {
-            validateType(...sp);
+            validateType(Sprite, ...sp);
             this._sprites = sp;
         } catch (e) {
             console.log(e);
@@ -290,8 +259,8 @@ class Scene {
 
     addSprite(s1, ...sargs) {
         try {
-            validateType(s1, ...sargs);
-            this._sprites.push(s1);
+            validateType(Sprite, s1, ...sargs);
+            this._sprites.push(s1,...sargs);
         } catch (e) {
             console.log(e);
         }
@@ -303,7 +272,6 @@ class Scene {
     @class
 */
 class Sprite {
-
     /**
         @typedef BOUND_ACTION
         @type {Object}
@@ -344,17 +312,15 @@ class Sprite {
         Set the image source
         @param {string} img - Path to source image.
     */
-    setImage(img) {
-        this._image.src = img;
-    }
+    setImage(img) { this._image.src = img; }
 
     /** @prop {number} x - sprite x-coordinate. */
-    set X(x) { this._pos.x = x }
-    get X() { return this._pos.x; }
+    set x(x) { this._pos.x = x }
+    get x() { return this._pos.x; }
 
     /** @prop {number} y - sprite y-coordinate */
-    set Y(y) { this._pos.y = y; }
-    get Y() { return this._pos.y; }
+    set y(y) { this._pos.y = y; }
+    get y() { return this._pos.y; }
 
     /**
         Change position to the givent x/y coordinates
@@ -376,7 +342,7 @@ class Sprite {
     */
     draw() {
         this._ctx.save();
-        this._ctx.translate(this.X, this.Y);
+        this._ctx.translate(this._pos.x, this._pos.y);
         this._ctx.rotate(this._imageAngle);
         this._ctx.drawImage(this._image, -(this._width / 2), -(this._height / 2), this._width, this._height);
         this._ctx.restore();
@@ -386,13 +352,8 @@ class Sprite {
         Shift by x and y pixels relative to current position.
         @param {number} x - amount in x direction
         @param {number} y - amount in y direction.
-        @return {Vector2} The new positon vector
     */
-    translate(x, y) {
-        this._pos.addWith(new Vector2(x,y));
-
-        return this._pos;
-    }
+    translate(x, y) { this._pos.addWith(new Vector2(x,y)); }
 
     get speed() { return this._velocity.magnitude; }
     set speed(s) { this.setSpeed(s); }
@@ -467,8 +428,22 @@ class Sprite {
     get boundAction() { return this._boundAction; }
     set boundAction(a) { this.setBoundAction(a); }
 
-    setBoundAction(action) {
+    setBoundAction(action) { this._boundAction = action; }
 
+    checkBounds() {
+        switch (this.boundAction) {
+            case Sprite.BOUND_ACTION.WRAP:
+                if (this._pos.x > this._scene.size['width']) {
+                    this._pos.x = this.width;
+                }
+                break;
+            case Sprite.BOUND_ACTION.BOUNCE:
+                break;
+            case Sprite.BOUND_ACTION.DESTROY:
+                break;
+            default:
+                break;
+        }
     }
 
     update() {
