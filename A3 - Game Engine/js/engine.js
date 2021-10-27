@@ -194,16 +194,12 @@ class Scene {
     /**
         Clear the canvas by overwriting it with white
     */
-    clear() {
-        this._context.clearRect(0, 0, this._width, this._height);
-    }
+    clear() { this._context.clearRect(0, 0, this._width, this._height); }
 
     /** Sets the update delate for the scene.
         @prop {number} d - integer specifying the clock update delate.
     */
-    setDelay(d) {
-        this._delay = d;
-    }
+    setDelay(d) { this._delay = d; }
 
     /**
         Sets the size of the canvas object.
@@ -223,9 +219,7 @@ class Scene {
 
         @param {string} color
     */
-    setBgColor(color) {
-        this._canvas.style.backgroundColor = color;
-    }
+    setBgColor(color) { this._canvas.style.backgroundColor = color; }
 
     /**
         Starts a scene. Initializes the keyboard and mouse, then calls setInterval
@@ -263,15 +257,28 @@ class Scene {
         update();
     }
 
+    addSprite(sprite) { this._sprites.append(sprite); }
 } // end Scene
 
+/**
+    Represents a sprite on the canvas.
+    @class
+*/
 class Sprite {
 
+    /**
+        @typedef BOUND_ACTION
+        @type {Object}
+        @prop WRAP
+        @prop BOUNCE
+        @prop DESTROY
+        @static
+    */
     static BOUND_ACTION = {
-        WRAP,
-        BOUNCE,
-        DESTROY
-    }
+        WRAP: 0,
+        BOUNCE: 1,
+        DESTROY: 2
+    };
 
     constructor(img, scene, width=10, height=10, x=0, y=0) {
         this._scene = scene;
@@ -289,37 +296,148 @@ class Sprite {
 
         this._imageAngle = 0;
         this._moveAngle  = 0;
-        this._visible = true;
+        this._hidden = false;
         this._boundAction = Sprite.BOUND_ACTION.WRAP;
+
+        this._scene.addSprite(this);
     }
 
+    /**
+        Set the image source
+        @param {string} img - Path to source image.
+    */
     setImage(img) {
         this._image.src = img;
     }
 
+    /** @prop {number} x - sprite x-coordinate. */
     set X(x) { this._pos.x = x }
     get X() { return this._pos.x; }
+
+    /** @prop {number} y - sprite y-coordinate */
     set Y(y) { this._pos.y = y; }
     get Y() { return this._pos.y; }
 
+    /**
+        Change position to the givent x/y coordinates
+        @param {number} x
+        @param {number} y
+        @return {Vector2} The new position vector
+    */
     setPosition(x, y) {
         this._pos.x = x;
         this._pox.y = y;
+
+        return this._pos;
+    }
+
+    /**
+        Draw self on the canvas.
+        This should probably never be called by the user. This should only be
+        called from the Sprite's update() function.
+    */
+    draw() {
+        this._ctx.save();
+        this._ctx.translate(this.X, this.Y);
+        this._ctx.rotate(this._imageAngle);
+        this._ctx.drawImage(this._image, -(this._width / 2), -(this._height / 2), this._width, this._height);
+        this._ctx.restore();
     }
 
     /**
         Shift by x and y pixels relative to current position.
         @param {number} x - amount in x direction
         @param {number} y - amount in y direction.
-        @return {Vector2} the new positon
+        @return {Vector2} The new positon vector
     */
     translate(x, y) {
+        this._pos.addWith(new Vector2(x,y));
 
-        this.setX(x)
+        return this._pos;
     }
 
+    get speed() { return this._velocity.magnitude; }
+    set speed(s) { this.setSpeed(s); }
 
+    /**
+        Set speed in the current direction.
+        @param {number} speed
+    */
+    setSpeed(speed) { this._velocity.magnitude = speed; }
 
+    get vel() { return this._velocity; }
+    set vel(v) { this.setVelocity(v); }
+
+    setVelocity(vel) {
+        try {
+            if (Vector2.validate(v)) this._velocity = v;
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    /**
+        @prop {Vector2} accel - The acceleration vector.
+    */
+    get accel() { return this._accel.magnitude; }
+    set accel(a) { this.setAccel(a); }
+    /**
+        Set the acceleration in the current direction
+        @param {number} accel
+    */
+    setAccel(accel) { this._accel.magnitude = accel; }
+
+    get moveAngle() { return Angle.toDegrees(this._velocity.angle); }
+    set moveAngle(a) { this.setMoveAngle(a); }
+
+    setMoveAngle(degrees) {
+        let rad = Angle.toRadians(degrees);
+        this._moveAngle = rad;
+        this._velocity.angle = rad;
+    }
+
+    rotateMoveAngle(degrees) { this.setMoveAngle(this.moveAngle + degrees); }
+
+    get imageAngle() { return Angle.toDegrees(this._imageAngle); }
+    set imageAngle(a) { this.setImageAngle(a); }
+
+    setImageAngle(degrees) { this._imageAngle = Angle.toRadians(degrees); }
+
+    rotateImageAngle(degrees) { this.setImageAngle(this.imageAngle + degrees); }
+
+    /**
+        Modify moveAngle and imageAngle simultaneously.
+        @prop {number} degrees - number of degrees to rotate.
+    */
+    rotate(degrees) {
+        this.rotateMoveAngle(degrees);
+        this.rotateImageAngle(degrees);
+    }
+
+    /**
+        Add the given force to the sprite
+        @param {vector2} f - the force vector to add
+    */
+    addForce(f) { this._velocity.addWith(f); }
+
+    get visible() { return !this._hidden; }
+    get hidden() { return this._hidden; }
+
+    hide() { this._hidden = true; }
+    show() { this._hidden = false; }
+
+    get boundAction() { return this._boundAction; }
+    set boundAction(a) { this.setBoundAction(a); }
+
+    setBoundAction(action) {
+
+    }
+
+    update() {
+        this.translate(this._velocity.x, this._velocity.y);
+        this.checkBounds();
+        if (this.visible) { this.draw(); }
+    }
 
 } // end Sprite
 
