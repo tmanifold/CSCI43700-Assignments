@@ -1,5 +1,13 @@
 'use strict';
 
+const validateType = (type, ...args) => {
+    for (const v of vx) {
+        if (!(v instanceof Vector2)) {
+            throw new TypeError(`${v} must be of type: ${type}`);
+        }
+    }
+}
+
 class Mouse {
     constructor() {
         this._x = 0;
@@ -201,6 +209,21 @@ class Scene {
     */
     setDelay(d) { this._delay = d; }
 
+    set width(w) { this.setWidth(w); }
+    get width() { return this.getWidth(); }
+
+    setWidth(w) { this._canvas.width = w; }
+    getWidth() { return this._canvas.width; }
+
+    set height(h) { this.setHeight(h); }
+    get height() { return this.getHeight(); }
+
+    setHeight(h) { this._canvas.height = h; }
+    getHeight() { return this._canvas.height; }
+
+    set size(sz) { this.setSize(sz.width, sz.height); }
+    get size() { return this.getSize(); }
+
     /**
         Sets the size of the canvas object.
 
@@ -213,6 +236,10 @@ class Scene {
         /** @prop {number} height - canvas height in pixels*/
         this._canvas.height = height;
     }
+
+    getSize() { return [this._canvas.width, this._canvas.height]; }
+
+    set backColor(color) { this.setBgColor(color); }
 
     /**
         Set the background color for the canvas
@@ -243,21 +270,32 @@ class Scene {
         this._intervalId = setInterval(this.updateLocal, this._delay);
     }
 
-    /**
-        Stop the scene.
-    */
-    end() {
-        clearInterval(this._intervalId);
+    /** Stop the scene. */
+    end() { clearInterval(this._intervalId); }
+
+    /** Run once per frame. Calls a user defined update() function. */
+    updateLocal() { update(); }
+
+    get sprites() { return this._sprites; }
+    set sprites(sp) { this.setSprites(sp); }
+
+    setSprites(sp) {
+        try {
+            validateType(...sp);
+            this._sprites = sp;
+        } catch (e) {
+            console.log(e);
+        }
     }
 
-    /**
-        Run once per frame. Calls a user defined update() function.
-    */
-    updateLocal() {
-        update();
+    addSprite(s1, ...sargs) {
+        try {
+            validateType(s1, ...sargs);
+            this._sprites.push(s1);
+        } catch (e) {
+            console.log(e);
+        }
     }
-
-    addSprite(sprite) { this._sprites.append(sprite); }
 } // end Scene
 
 /**
