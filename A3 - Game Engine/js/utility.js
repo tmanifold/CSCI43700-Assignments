@@ -1,3 +1,13 @@
+
+/**
+    A utility class to handle conversions between degrees and radians.
+    @class
+*/
+class Angle {
+    static toRadians(degress) { return degrees * Math.PI / 180; }
+    static toDegrees(radians) { return radians * 180 / Math.PI; }
+}
+
 /**
     Constructs a Vector2.
 
