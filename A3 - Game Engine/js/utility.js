@@ -4,7 +4,7 @@
     @class
 */
 class Angle {
-    static toRadians(degress) { return degrees * Math.PI / 180; }
+    static toRadians(degrees) { return degrees * Math.PI / 180; }
     static toDegrees(radians) { return radians * 180 / Math.PI; }
 }
 
@@ -32,20 +32,16 @@ class Vector2 {
         Adds the components of another vector to this vector.
 
         @param {Vector2} v - The vector to add to this one.
-        @return {vector2|null} The updated vector or null if an error occurs.
     */
     addWith(v) {
         try {
             Vector2.validate(v);
-
             // component add
             this.x += v.x;
             this.y += v.y;
 
-            return this;
         } catch (e) {
             console.log(e);
-            return null;
         }
     }
 
