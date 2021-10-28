@@ -91,18 +91,16 @@ class Vector2 {
         this.y = this.norm * Math.sin(theta);
 
         // sanity check to make sure we did math right
-        if (!(this.angle === theta)) {
-            console.log(`VECTOR ERROR: ${this.angle} =/= ${theta}`)
-        }
+        // if (!(this.angle === theta)) {
+        //     console.log(`VECTOR ERROR: ${this.angle} =/= ${theta}`)
+        // }
     }
 
     /**
         Rotate this vector by the given amount.
         @param {number} amt - number of radians to rotate.
     */
-    rotate(amt) {
-        this.setAngle(this.angle + amt);
-    }
+    rotate(amt) { this.setAngle(this.angle + amt); }
 
     /**
         @prop {number} magnitude - The length of the vector
@@ -120,9 +118,9 @@ class Vector2 {
         this.x = vx;
         this.y = vy;
 
-        if (!(this.magnitude === r)) {
-            console.log(`VECTOR ERROR: ${this.magnitude} =/= ${r}`);
-        }
+        // if (!(this.magnitude === r)) {
+        //     console.log(`VECTOR ERROR: ${this.magnitude} =/= ${r}`);
+        // }
     }
 
     /**
@@ -139,9 +137,7 @@ class Vector2 {
     /**
         @prop {Vector2} unit - A unit vector representation of this Vector2
     */
-    get unit() {
-        return new Vector2(this.x / this.norm, this.y / this.norm);
-    }
+    get unit() { return new Vector2(this.x / this.norm, this.y / this.norm); }
 
     /**
         Add the components of the specified vectors
