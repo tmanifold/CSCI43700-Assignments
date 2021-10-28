@@ -10,6 +10,38 @@
 
         <script type="text/javascript">
 
+            function checkKeys(sp) {
+                kb = scene.kb;
+
+                if (kb.keys['w']) {
+                    sp.addForce(new Vector2(0, -1));
+                }
+                if (kb.keys['a']) {
+                    sp.addForce(new Vector2(-1, 0));
+                }
+                if (kb.keys['s']) {
+                    sp.addForce(new Vector2(0, 1));
+                }
+                if (kb.keys['d']) {
+                    sp.addForce(new Vector2(1, 0));
+                }
+            }
+
+            function spawnBurger(scene) {
+
+                let burger = new Sprite('./img/burger.png', scene, 50, 50, getRandomInt(scene.width), getRandomInt(scene.height));
+                let vmax = 10;
+                let x = getRandomInt(vmax);
+                let y = getRandomInt(vmax);
+                burger.addForce(new Vector2(x, y));
+                // FIGURE OUT ROATION
+            }
+
+            // https://stackoverflow.com/a/13455101
+            function getRandomInt(max) {
+                return Math.ceil(Math.random() * max) * (Math.round(Math.random()) ? 1 : -1);
+            }
+
             function init() {
 
                 setDebugMode(DEBUG.ON);
@@ -17,15 +49,22 @@
                 scene = new Scene('demo');
                 scene.setBorder("1px solid gray");
 
+                Cow = new Sprite('./img/livestock/cow side.png', scene, 50, 50, scene.width / 2, scene.height / 2);
+
+
                 document.getElementById("btnSceneStart").onclick = scene.start;
                 document.getElementById("btnSceneStop").onclick = scene.stop;
 
-                sp = new Sprite('./img/burger.png', scene, 50, 50, 50, 100);
+                //sp = new Sprite('./img/burger.png', scene, 50, 50, 50, 100);
                 //sp.addForce(new Vector2(5, 0));
                 //sp.setBoundAction(Sprite.BOUND_ACTION.BOUNCE);
 
-                sp2 = new Sprite('./img/burger.png', scene, 50, 50, 300, 100);
+                //sp2 = new Sprite('./img/burger.png', scene, 50, 50, 300, 100);
                 //sp2.addForce(new Vector2(-5, 0));
+
+                for (let i = 0; i < 5; i++) {
+                    spawnBurger(scene);
+                }
 
                 scene.start();
 
@@ -41,27 +80,13 @@
             function update() {
                 //document.getElementById("timer").innerHTML = t.time / 1000;
 
-                kb = scene.kb;
-
-                if (kb.keys['w']) {
-                    sp.addForce(new Vector2(0, -1));
-                }
-                if (kb.keys['a']) {
-                    sp.addForce(new Vector2(-1, 0));
-                }
-                if (kb.keys['s']) {
-                    sp.addForce(new Vector2(0, 1));
-                }
-                if (kb.keys['d']) {
-                    sp.addForce(new Vector2(1, 0));
-                }
+                this.checkKeys(Cow);
 
                 scene.clear();
-                
+
                 for (const sprite of scene.sprites) {
                     //sprite.rotateImageAngle(0.5);
                     sprite.update();
-                    sp.collidesWith(sp2);
                 }
             }
 
