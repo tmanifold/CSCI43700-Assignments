@@ -1,14 +1,25 @@
 'use strict';
 
-var DEBUG = {
+/** DEBUG
+    @enum {number}
+    @readonly*/
+const DEBUG = {
     OFF: 0,
     ON: 1
 };
 
+/** Flag for debug mode */
 var g_DEBUG_MODE = DEBUG.OFF;
 
+/** Sets g_DEBUG_MODE to the specifed debug mode */
 function setDebugMode(mode) { g_DEBUG_MODE = mode; }
 
+/**
+    A utility function to validate the type of objects.
+    @param {Type} type - the type to check
+    @param {...} args - the objects to check
+    @throws {TypeError} Throws TypeError if an argument is not of the specified `type`.
+ */
 const validateType = (type, ...args) => {
     for (const arg of args) {
         if (!(arg instanceof type)) {
@@ -17,6 +28,10 @@ const validateType = (type, ...args) => {
     }
 }
 
+/**
+    Mouse
+    @class
+*/
 class Mouse {
     constructor(scene) {
         this._x = 0;
@@ -47,6 +62,10 @@ class Mouse {
     show() { this._visible = true; }
 } // end Mouse
 
+/**
+    keyboard
+    @class
+*/
 class Keyboard {
     constructor(scene) {
         /** @prop {Object.<string, boolean>} _keyState - dictionary of keystates indicating if a key is pressed */
@@ -55,6 +74,9 @@ class Keyboard {
         document.onkeydown = this.updateKeyState.bind(this);
         document.onkeyup = this.resetKeyState.bind(this);
     }
+
+    /** @prop {Array.<string, boolean>} */
+    get keys() { return this._keyState; }
 
     /**
         Record a keypress
@@ -185,6 +207,14 @@ class Scene {
         this._delay = 50;
     }
 
+    /** @prop {Keyboard}
+        @readonly */
+    get kb() { return this._keyboard; }
+
+    /** @prop {Mouse}
+        @readonly */
+    get mouse() { return this._mouse; }
+
     /** Sets the update delate for the scene.
         @prop {number} d - integer specifying the clock update delate.
     */
@@ -277,18 +307,50 @@ class Scene {
 } // end Scene
 
 /**
+    Represents the axis aligned bounding box of a sprite.
+    All boundary coordinates are relative to the sprite center.
+    @class
+*/
+class SpriteBoundary {
+    /**
+        Constructs a SpriteBoundary
+        @param {Sprite} sprite - the sprite this boundary belongs to.
+    */
+    constructor(sprite) {
+        this._sprite = sprite;
+        this._offsetLeft = sprite.width / 2;
+        this._offsetRight = sprite.width / 2;
+        this._offsetTop = sprite.height / 2;
+        this._offsetBottom = sprite.height / 2;
+    }
+
+    /** @prop {number} */
+    get left() { return this._sprite.x - this._offsetLeft; }
+    set left(l) { this._offsetLeft = l; }
+
+    /** @prop {number} */
+    get right() { return this._sprite.x + this._offsetRight; }
+    set right(r) { this._offestRight = r; }
+
+    /** @prop {number} */
+    get top() { return this._sprite.y - this._offsetTop; }
+    set top(t) { this._offsetTop = t; }
+
+    /** @prop {number} */
+    get bottom() { return this._sprite.y + this._offsetBottom; }
+    set bottom(b) { this._offsetBottom = b; }
+}
+
+/**
     Represents a sprite on the canvas.
     @class
 */
 class Sprite {
     /**
-        @typedef BOUND_ACTION
-        @type {Object}
-        @prop WRAP
-        @prop BOUNCE
-        @prop HIDE
-        @prop DESTROY
+        How to handle interaction with the scene boundary.
+        @enum {number}
         @static
+        @readonly
     */
     static BOUND_ACTION = {
         WRAP: 0,
@@ -296,6 +358,14 @@ class Sprite {
         DESTROY: 2
     };
 
+    /**
+        @param {string} img - path to source image.
+        @param {Scene} scene - the scene to which the sprite should belong.
+        @param {number} width=10 - width of the sprite in pixels.
+        @param {number} height=10 - height of the sprite in pixels.
+        @param {number} x=0 - x coordinate
+        @param {number} y=0 - y coordinate
+    */
     constructor(img, scene, width=10, height=10, x=0, y=0) {
         this._scene = scene;
         this._canvas = scene._canvas;
@@ -306,6 +376,9 @@ class Sprite {
         this._width = width;
         this._height = height;
 
+        this._id = Date.now();
+        this._name = `sprite-${img}`;
+
         this._pos = new Vector2(x, y);
         this._velocity = new Vector2();
         this._accel = new Vector2();
@@ -314,15 +387,51 @@ class Sprite {
         this._moveAngle  = 0;
         this._hidden = false;
         this._boundAction = Sprite.BOUND_ACTION.WRAP;
+        this._bounds = new SpriteBoundary(this);
 
         this._scene.addSprite(this);
     }
+
+    /* PROPERTIES */
 
     /**
         Set the image source
         @param {string} img - Path to source image.
     */
     setImage(img) { this._image.src = img; }
+
+    /** @prop {boolean} visible - if the sprite is set to visible. Opposite of `hidden`*/
+    get visible() { return !this._hidden; }
+    /** @prop {boolean} hidden - if the sprite is hidden. Opposite of `visible`*/
+    get hidden() { return this._hidden; }
+
+    /** Make the sprite invisible */
+    hide() { this._hidden = true; }
+    /** Show the sprite */
+    show() { this._hidden = false; }
+
+    /** @prop {number} id
+        @readonly */
+    get id() { return this._id; }
+
+    /** @prop {string} name */
+    get name() { return this._name; }
+    set name(n) { this._name = n; }
+
+    /** @prop {SpriteBoundary} bounds */
+    get bounds() { return this._bounds; };
+
+    /** @prop {number} */
+    get width() { return this._width; }
+    set width(w) { this._width = w; }
+
+    /** @prop {number} */
+    get height() { return this._height; }
+    set height(h) { this._height = h; }
+
+    /* END PROPERTIES */
+
+    /* POSITION & ROTATION */
 
     /** @prop {number} x - sprite x-coordinate. */
     set x(x) { this._pos.x = x }
@@ -339,9 +448,6 @@ class Sprite {
     */
     setPosition(x, y) { this._pos = new Vector2(x, y); }
 
-    // get center() { return new Vector2(this._pos.x + this._width / 2, this._pos.y + this._height / 2); }
-    get center() { return this._pos; }
-
     /**
         Shift by x and y pixels relative to current position.
         @param {number} x - amount in x direction
@@ -349,6 +455,54 @@ class Sprite {
     */
     translate(x, y) { this._pos.addWith(new Vector2(x,y)); }
 
+    /** @prop {number} moveAngle - the direction of motion. */
+    get moveAngle() { return Angle.toDegrees(this._velocity.angle); }
+    set moveAngle(a) { this.setMoveAngle(a); }
+
+    /**
+        Set the direction of motion.
+        @param {number} degreees - angle in degrees.
+    */
+    setMoveAngle(degrees) {
+        let rad = Angle.toRadians(degrees);
+        this._moveAngle = rad;
+        this._velocity.angle = rad;
+    }
+
+    /**
+        Adjust the direction of movement by the specified amount.
+        @param {number} degrees - amount to change by
+    */
+    rotateMoveAngle(degrees) { this.setMoveAngle(this.moveAngle + degrees); }
+
+    /** @prop {number} imageAngle - the rotation of the sprite image. */
+    get imageAngle() { return Angle.toDegrees(this._imageAngle); }
+    set imageAngle(a) { this.setImageAngle(a); }
+
+    /**
+        Set the sprite image rotation
+        @param {number} degrees - rotation in degrees.
+    */
+    setImageAngle(degrees) { this._imageAngle = Angle.toRadians(degrees); }
+
+    /**
+        Adjust rotation by the specifed amount.
+        @param {number} degrees - amount to change by
+    */
+    rotateImageAngle(degrees) { this.setImageAngle(this.imageAngle + degrees); }
+
+    /**
+        Modify moveAngle and imageAngle simultaneously.
+        @param {number} degrees - number of degrees to rotate.
+    */
+    rotate(degrees) {
+        this.rotateMoveAngle(degrees);
+        this.rotateImageAngle(degrees);
+    }
+
+    /* FORCES */
+
+    /** @prop {number} speed - how fast the sprite is moving. */
     get speed() { return this._velocity.magnitude; }
     set speed(s) { this.setSpeed(s); }
 
@@ -358,15 +512,14 @@ class Sprite {
     */
     setSpeed(speed) { this._velocity.magnitude = speed; }
 
-    /**
-        @prop {Vector2} vel - the velocity vector
-    */
+    /** @prop {Vector2} vel - the velocity vector */
     get vel() { return this._velocity; }
     set vel(v) { this.setVelocity(v); }
 
     /**
         Set the velocity vector for the sprite.
         @param {Vector2} vel - The new velocity vector.
+        @throws {TypeError} Will throw TypeError if accel is not a valid {@link Vector2}
     */
     setVelocity(vel) {
         try {
@@ -377,14 +530,14 @@ class Sprite {
         }
     }
 
-    /**
-        @prop {Vector2} accel - The acceleration vector.
-    */
+    /** @prop {Vector2} accel - The acceleration vector. */
     get accel() { return this._accel; }
     set accel(a) { this.setAccel(a); }
+
     /**
         Set the acceleration vector
         @param {Vector2} accel - The new acceleration vector
+        @throws {TypeError} Will throw TypeError if accel is not a valid {@link Vector2}
     */
     setAccel(accel) {
         try {
@@ -395,54 +548,78 @@ class Sprite {
         }
     }
 
-    get moveAngle() { return Angle.toDegrees(this._velocity.angle); }
-    set moveAngle(a) { this.setMoveAngle(a); }
-
-    setMoveAngle(degrees) {
-        let rad = Angle.toRadians(degrees);
-        this._moveAngle = rad;
-        this._velocity.angle = rad;
-    }
-
-    rotateMoveAngle(degrees) { this.setMoveAngle(this.moveAngle + degrees); }
-
-    get imageAngle() { return Angle.toDegrees(this._imageAngle); }
-    set imageAngle(a) { this.setImageAngle(a); }
-
-    setImageAngle(degrees) { this._imageAngle = Angle.toRadians(degrees); }
-
-    rotateImageAngle(degrees) { this.setImageAngle(this.imageAngle + degrees); }
-
-    /**
-        Modify moveAngle and imageAngle simultaneously.
-        @prop {number} degrees - number of degrees to rotate.
-    */
-    rotate(degrees) {
-        this.rotateMoveAngle(degrees);
-        this.rotateImageAngle(degrees);
-    }
-
-    angleTo(sprite) { return Angle.toDegrees(Math.atan2(this.x - sprite.x, this.y - sprite.y)) + 90; }
-
-    distanceTo(sprite) { return new Vector2(this.x - sprite.x, this.y - sprite.y).norm; }
-
     /**
         Add the given force to the sprite
-        @param {vector2} f - the force vector to add
+        @param {Vector2} f - the force vector to add
     */
     addForce(f) { this._velocity.addWith(f); }
 
-    get visible() { return !this._hidden; }
-    get hidden() { return this._hidden; }
+    /* END FORCES */
 
-    hide() { this._hidden = true; }
-    show() { this._hidden = false; }
+    /**
+        Get the angle to the specified sprite.
+        @param {Sprite} sprite - the target sprite.
+        @return {number} angle in degrees
+    */
+    angleTo(sprite) { return Angle.toDegrees(Math.atan2(this.x - sprite.x, this.y - sprite.y)) + 90; }
 
+    /**
+        Get the distance to the specified sprite.
+        @param {Sprite} sprite - the target sprite.
+        @return {number} distance between the two sprites.
+    */
+    distanceTo(sprite) { return new Vector2(this.x - sprite.x, this.y - sprite.y).norm; }
+
+    /**
+        Determine if colliding with the given sprite.
+        @param {Sprite} sprite - the sprite to check collision with.
+        @return {boolean}
+    */
+
+    collidesWith(sprite) {
+
+        let colliding = false;
+        // only detect collisions between visible sprites.
+
+        if (this.visible && sprite.visible) {
+
+            // assume we are colliding
+            colliding = true;
+
+            // test non-colliding states
+            if (this._bounds.left > sprite.bounds.right || // this to right of sprite
+                this._bounds.right < sprite.bounds.left || // this to left of sprite
+                this._bounds.top > sprite.bounds.bottom || // this below sprite
+                this._bounds.bottom < sprite.bounds.top) { // this above sprite
+
+                colliding = false;
+            }
+        }
+
+        if (g_DEBUG_MODE == DEBUG.ON && colliding) {
+            console.log(`${this.id} collides with ${sprite.id}`);
+        }
+
+        return colliding;
+    }
+
+    /* BOUNDARY BEHAVIOR */
+
+    /** @prop {BOUND_ACTION} boundAction - The action to perform when encountering a boundary. */
     get boundAction() { return this._boundAction; }
     set boundAction(a) { this.setBoundAction(a); }
 
+    /**
+        Set the boundAction.
+        @param {BOUND_ACTION} action
+    */
     setBoundAction(action) { this._boundAction = action; }
 
+    /**
+        Check if sprite is out of bounds. Has different behavior based on the
+        value of {@link Sprite#boundAction}.
+        @see BOUND_ACTION
+    */
     checkBounds() {
         //console.log(this._pos);
         switch (this.boundAction) {
@@ -486,19 +663,19 @@ class Sprite {
             case Sprite.BOUND_ACTION.DESTROY:
                 // check left and right
                 let destroy = false;
-                if (this._pos.x > this._scene.width || this._pos.x < 0) {
+                if (this._pos.x > this._scene.width + this._width / 2 || this._pos.x < 0 - this._width / 2) {
                     destroy = true;
                 }
                 // check top and botton
-                if (this._pos.y > this._scene.height || this._pos.y < 0) {
+                if (this._pos.y > this._scene.height + this._height / 2 || this._pos.y < 0 - this._height / 2) {
                     destroy = true;
                 }
 
                 if (destroy) {
-                    let i = this._scene.sprites.findIndex((a) => {
+                    let index = this._scene.sprites.findIndex((a) => {
                         Object.is(this, a);
                     });
-                    this._scene.sprites.splice(i, 1);
+                    this._scene.sprites.splice(index, 1);
                 }
                 break;
             default:
@@ -509,7 +686,7 @@ class Sprite {
     /**
         Draw self on the canvas.
         This should probably never be called by the user. This should only be
-        called from the Sprite's update() function.
+        called from {@link Sprite#update()}.
     */
     draw() {
         this._ctx.save();
@@ -524,6 +701,7 @@ class Sprite {
         //this._ctx.drawImage(this._image, this.x, this.y, this._width, this._height);
 
         if (g_DEBUG_MODE == DEBUG.ON) {
+            this._ctx.strokeStyke = "green";
             this._ctx.strokeRect(xx, yy, this._width, this._height);
             //this._ctx.strokeRect(this.x, this.y, this._width, this._height);
 
