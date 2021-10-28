@@ -701,7 +701,7 @@ class Sprite {
         //this._ctx.drawImage(this._image, this.x, this.y, this._width, this._height);
 
         if (g_DEBUG_MODE == DEBUG.ON) {
-            this._ctx.strokeStyke = "green";
+            this._ctx.strokeStyle = "green";
             this._ctx.strokeRect(xx, yy, this._width, this._height);
             //this._ctx.strokeRect(this.x, this.y, this._width, this._height);
 
