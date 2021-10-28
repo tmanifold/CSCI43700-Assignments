@@ -1,5 +1,14 @@
 'use strict';
 
+var DEBUG = {
+    OFF: 0,
+    ON: 1
+};
+
+var g_DEBUG_MODE = DEBUG.OFF;
+
+function setDebugMode(mode) { g_DEBUG_MODE = mode; }
+
 const validateType = (type, ...args) => {
     for (const arg of args) {
         if (!(arg instanceof type)) {
@@ -330,7 +339,8 @@ class Sprite {
     */
     setPosition(x, y) { this._pos = new Vector2(x, y); }
 
-    get center() { return new Vector2(this._pos.x + this._width / 2, this._pos.y + this._height / 2); }
+    // get center() { return new Vector2(this._pos.x + this._width / 2, this._pos.y + this._height / 2); }
+    get center() { return this._pos; }
 
     /**
         Shift by x and y pixels relative to current position.
@@ -348,12 +358,20 @@ class Sprite {
     */
     setSpeed(speed) { this._velocity.magnitude = speed; }
 
+    /**
+        @prop {Vector2} vel - the velocity vector
+    */
     get vel() { return this._velocity; }
     set vel(v) { this.setVelocity(v); }
 
+    /**
+        Set the velocity vector for the sprite.
+        @param {Vector2} vel - The new velocity vector.
+    */
     setVelocity(vel) {
         try {
-            if (Vector2.validate(v)) this._velocity = v;
+            Vector2.validate(vel);
+            this._velocity = vel;
         } catch (e) {
             console.log(e);
         }
@@ -362,13 +380,20 @@ class Sprite {
     /**
         @prop {Vector2} accel - The acceleration vector.
     */
-    get accel() { return this._accel.magnitude; }
+    get accel() { return this._accel; }
     set accel(a) { this.setAccel(a); }
     /**
-        Set the acceleration in the current direction
-        @param {number} accel
+        Set the acceleration vector
+        @param {Vector2} accel - The new acceleration vector
     */
-    setAccel(accel) { this._accel.magnitude = accel; }
+    setAccel(accel) {
+        try {
+            Vector2.validate(accel);
+            this._accel = accel;
+        } catch (e) {
+            console.log(e);
+        }
+    }
 
     get moveAngle() { return Angle.toDegrees(this._velocity.angle); }
     set moveAngle(a) { this.setMoveAngle(a); }
@@ -424,22 +449,22 @@ class Sprite {
             case Sprite.BOUND_ACTION.WRAP:
                 // check right and left
                 if (this._pos.x > this._scene.width) {
-                    this._pos.x = this._width / 2;
+                    this._pos.x = 0;
                 } else if (this._pos.x < 0) {
-                    this._pos.x = this._scene.width - this._width / 2;
+                    this._pos.x = this._scene.width;
                 }
                 // check top and botton
                 if (this._pos.y > this._scene.height) {
-                    this._pos.y = this._height / 2;
+                    this._pos.y = 0;
 
                 } else if (this._pos.y < 0) {
-                    this._pos.y = this._scene.height - this._height / 2;
+                    this._pos.y = this._scene.height;
                 }
                 break;
             case Sprite.BOUND_ACTION.BOUNCE:
                 // check right
-                if (this._pos.x > this._scene.width - this._width) {
-                    this._pos.x = this._scene.width - this._width;
+                if (this._pos.x > this._scene.width) {
+                    this._pos.x = this._scene.width;
                     this._velocity.x *= -1;
                 }
                 // check left
@@ -448,8 +473,8 @@ class Sprite {
                     this._velocity.x *= -1;
                 }
                 // check bottom
-                if (this._pos.y > this._scene.height - this._height) {
-                    this._pos.y = this._scene.height - this._height;
+                if (this._pos.y > this._scene.height) {
+                    this._pos.y = this._scene.height;
                     this._velocity.y *= -1;
                 }
                 // check top
@@ -489,27 +514,31 @@ class Sprite {
     draw() {
         this._ctx.save();
 
-        //this._ctx.translate(this._pos.x, this._pos.y);
+        this._ctx.translate(this._pos.x, this._pos.y);
         this._ctx.rotate(this._imageAngle);
 
-        // let xx = -(this._width / 2);
-        // let yy = -(this._height / 2);
+        let xx = -(this._width / 2);
+        let yy = -(this._height / 2);
 
-        //this._ctx.drawImage(this._image, xx, yy, this._width, this._height);
-        this._ctx.drawImage(this._image, this.x, this.y, this._width, this._height);
+        this._ctx.drawImage(this._image, xx, yy, this._width, this._height);
+        //this._ctx.drawImage(this._image, this.x, this.y, this._width, this._height);
 
-        //this._ctx.strokeRect(xx, yy, this._width, this._height);
-        this._ctx.strokeRect(this.x, this.y, this._width, this._height);
+        if (g_DEBUG_MODE == DEBUG.ON) {
+            this._ctx.strokeRect(xx, yy, this._width, this._height);
+            //this._ctx.strokeRect(this.x, this.y, this._width, this._height);
 
-        this._ctx.fillStyle = "red";
-        this._ctx.beginPath();
-        this._ctx.arc(this.center.x, this.center.y, 2, 0, 2 * Math.PI);
-        this._ctx.fill();
+            this._ctx.fillStyle = "red";
+            this._ctx.beginPath();
+            //this._ctx.arc(this.center.x, this.center.y, 2, 0, 2 * Math.PI)
+            this._ctx.arc(0, 0, 2, 0, 2 * Math.PI);
+            this._ctx.fill();
+        }
 
         this._ctx.restore();
     }
 
     update() {
+        this.addForce(this._accel);
         this.translate(this._velocity.x, this._velocity.y);
         this.checkBounds();
         if (this.visible) { this.draw(); }
