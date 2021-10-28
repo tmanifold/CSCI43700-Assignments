@@ -11,34 +11,78 @@
         <script type="text/javascript">
 
             function init() {
+
+                setDebugMode(DEBUG.ON);
+
                 scene = new Scene('demo');
-                scene.setBgColor('grey');
+                scene.setBorder("1px solid gray");
+
+                document.getElementById("btnSceneStart").onclick = scene.start;
+                document.getElementById("btnSceneStop").onclick = scene.stop;
+
+                sp = new Sprite('./img/burger.png', scene, 50, 50, 50, 100);
+                //sp.addForce(new Vector2(5, 0));
+                //sp.setBoundAction(Sprite.BOUND_ACTION.BOUNCE);
+
+                sp2 = new Sprite('./img/burger.png', scene, 50, 50, 300, 100);
+                //sp2.addForce(new Vector2(-5, 0));
 
                 scene.start();
 
-                t = new Timer(() => {
-                    console.log("timer done.");
-                }, 10 * 1000);
-
-                t.start();
+                // t = new Timer(() => {
+                //     console.log("timer done.");
+                // }, 100 * 1000);
+                //
+                // document.getElementById("btnTimerStart").onclick = t.start.bind(t);
+                // document.getElementById("btnTimerStop").onclick = t.stop.bind(t);
+                // document.getElementById("btnTimerPause").onclick = t.pause.bind(t);
             }
 
             function update() {
-                document.getElementById("timer").innerHTML = t.time / 1000;
+                //document.getElementById("timer").innerHTML = t.time / 1000;
+
+                kb = scene.kb;
+
+                if (kb.keys['w']) {
+                    sp.addForce(new Vector2(0, -1));
+                }
+                if (kb.keys['a']) {
+                    sp.addForce(new Vector2(-1, 0));
+                }
+                if (kb.keys['s']) {
+                    sp.addForce(new Vector2(0, 1));
+                }
+                if (kb.keys['d']) {
+                    sp.addForce(new Vector2(1, 0));
+                }
+
+                scene.clear();
+                
+                for (const sprite of scene.sprites) {
+                    //sprite.rotateImageAngle(0.5);
+                    sprite.update();
+                    sp.collidesWith(sp2);
+                }
             }
 
         </script>
-
-
     </head>
 
     <body onload="init()">
 
         <h3> Game Engine Demo</h3>
 
-        Timer: <label id="timer">time</label>
-
+        Timer: <label id="timer">time</label><br />
+        <button id="btnTimerStart">Start</button>
+        <button id="btnTimerStop">Stop</button>
+        <button id="btnTimerPause">Pause</button>
         <div id="demo" style="border: 1px solid red; padding:10px;"></div>
+
+        <div id="debugConsole" style="border: 1px solid red; padding: 10px; margin-top: 10px;">
+            Debug<br />
+
+            <button id="btnSceneStart">Start Scene</button><button id="btnSceneStop">Stop Scene</button>
+        </div>
 
     </body>
 

@@ -258,6 +258,29 @@ class Scene {
     */
     setBgColor(color) { this._canvas.style.backgroundColor = color; }
 
+    setBorder(border) { this._canvas.style.border = border; }
+
+    get sprites() { return this._sprites; }
+    set sprites(sp) { this.setSprites(sp); }
+
+    setSprites(sp) {
+        try {
+            validateType(Sprite, ...sp);
+            this._sprites = sp;
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    addSprite(s1, ...sargs) {
+        try {
+            validateType(Sprite, s1, ...sargs);
+            this._sprites.push(s1,...sargs);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     /**
         Starts a scene. Initializes the keyboard and mouse, then calls setInterval
          using this.updateLocal and this._delay
@@ -282,27 +305,6 @@ class Scene {
     /** Run once per frame. Calls a user defined update() function. */
     updateLocal() {
         update();
-    }
-
-    get sprites() { return this._sprites; }
-    set sprites(sp) { this.setSprites(sp); }
-
-    setSprites(sp) {
-        try {
-            validateType(Sprite, ...sp);
-            this._sprites = sp;
-        } catch (e) {
-            console.log(e);
-        }
-    }
-
-    addSprite(s1, ...sargs) {
-        try {
-            validateType(Sprite, s1, ...sargs);
-            this._sprites.push(s1,...sargs);
-        } catch (e) {
-            console.log(e);
-        }
     }
 } // end Scene
 
