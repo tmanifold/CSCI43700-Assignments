@@ -277,6 +277,7 @@ class Sprite {
         @type {Object}
         @prop WRAP
         @prop BOUNCE
+        @prop HIDE
         @prop DESTROY
         @static
     */
@@ -295,8 +296,6 @@ class Sprite {
         this._image.src = img;
         this._width = width;
         this._height = height;
-
-        console.log(this._width, this._height)
 
         this._pos = new Vector2(x, y);
         this._velocity = new Vector2();
@@ -330,6 +329,8 @@ class Sprite {
         @param {number} y
     */
     setPosition(x, y) { this._pos = new Vector2(x, y); }
+
+    get center() { return new Vector2(this._pos.x + this._width / 2, this._pos.y + this._height / 2); }
 
     /**
         Shift by x and y pixels relative to current position.
@@ -396,6 +397,10 @@ class Sprite {
         this.rotateImageAngle(degrees);
     }
 
+    angleTo(sprite) { return Angle.toDegrees(Math.atan2(this.x - sprite.x, this.y - sprite.y)) + 90; }
+
+    distanceTo(sprite) { return new Vector2(this.x - sprite.x, this.y - sprite.y).norm; }
+
     /**
         Add the given force to the sprite
         @param {vector2} f - the force vector to add
@@ -432,31 +437,43 @@ class Sprite {
                 }
                 break;
             case Sprite.BOUND_ACTION.BOUNCE:
-                // check left and right
-                if (this._pos.x > this._scene.width) {
-
-                } else if (this._pos.x < 0) {
-
+                // check right
+                if (this._pos.x > this._scene.width - this._width) {
+                    this._pos.x = this._scene.width - this._width;
+                    this._velocity.x *= -1;
                 }
-                // check top and botton
-                if (this._pos.y > this._scene.height) {
-
-                } else if (this._pos.y < 0) {
-
+                // check left
+                if (this._pos.x < 0) {
+                    this._pos.x = 0;
+                    this._velocity.x *= -1;
+                }
+                // check bottom
+                if (this._pos.y > this._scene.height - this._height) {
+                    this._pos.y = this._scene.height - this._height;
+                    this._velocity.y *= -1;
+                }
+                // check top
+                if (this._pos.y < 0) {
+                    this._pos.y = 0;
+                    this._velocity.y *= -1;
                 }
                 break;
             case Sprite.BOUND_ACTION.DESTROY:
                 // check left and right
-                if (this._pos.x > this._scene.width) {
-
-                } else if (this._pos.x < 0) {
-
+                let destroy = false;
+                if (this._pos.x > this._scene.width || this._pos.x < 0) {
+                    destroy = true;
                 }
                 // check top and botton
-                if (this._pos.y > this._scene.height) {
+                if (this._pos.y > this._scene.height || this._pos.y < 0) {
+                    destroy = true;
+                }
 
-                } else if (this._pos.y < 0) {
-
+                if (destroy) {
+                    let i = this._scene.sprites.findIndex((a) => {
+                        Object.is(this, a);
+                    });
+                    this._scene.sprites.splice(i, 1);
                 }
                 break;
             default:
@@ -472,11 +489,22 @@ class Sprite {
     draw() {
         this._ctx.save();
 
-        this._ctx.translate(this._pos.x, this._pos.y);
+        //this._ctx.translate(this._pos.x, this._pos.y);
         this._ctx.rotate(this._imageAngle);
-        this._ctx.drawImage(this._image, -(this._width / 2), -(this._height / 2), this._width, this._height);
 
-        this._ctx.strokeRect(-(this._width / 2), -(this._height / 2), this._width, this._height);
+        // let xx = -(this._width / 2);
+        // let yy = -(this._height / 2);
+
+        //this._ctx.drawImage(this._image, xx, yy, this._width, this._height);
+        this._ctx.drawImage(this._image, this.x, this.y, this._width, this._height);
+
+        //this._ctx.strokeRect(xx, yy, this._width, this._height);
+        this._ctx.strokeRect(this.x, this.y, this._width, this._height);
+
+        this._ctx.fillStyle = "red";
+        this._ctx.beginPath();
+        this._ctx.arc(this.center.x, this.center.y, 2, 0, 2 * Math.PI);
+        this._ctx.fill();
 
         this._ctx.restore();
     }
