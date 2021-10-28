@@ -725,7 +725,6 @@ class Sprite {
     update() {
         this.addForce(this._accel);
         this.translate(this._velocity.x, this._velocity.y);
-        this.
         this.checkBounds();
         if (this.visible) { this.draw(); }
     }
