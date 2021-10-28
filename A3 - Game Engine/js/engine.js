@@ -579,27 +579,32 @@ class Sprite {
     */
 
     collidesWith(sprite) {
-
         let colliding = false;
-        // only detect collisions between visible sprites.
 
-        if (this.visible && sprite.visible) {
+        // do not detect collision with self
+        if (!(Object.is(this, sprite))) {
 
-            // assume we are colliding
-            colliding = true;
+            // only detect collisions between visible sprites.
 
-            // test non-colliding states
-            if (this._bounds.left > sprite.bounds.right || // this to right of sprite
-                this._bounds.right < sprite.bounds.left || // this to left of sprite
-                this._bounds.top > sprite.bounds.bottom || // this below sprite
-                this._bounds.bottom < sprite.bounds.top) { // this above sprite
+            if (this.visible && sprite.visible) {
 
-                colliding = false;
+                // assume we are colliding
+                colliding = true;
+
+                // test non-colliding states
+                if (this._bounds.left > sprite.bounds.right || // this to right of sprite
+                    this._bounds.right < sprite.bounds.left || // this to left of sprite
+                    this._bounds.top > sprite.bounds.bottom || // this below sprite
+                    this._bounds.bottom < sprite.bounds.top) { // this above sprite
+
+                    colliding = false;
+                }
             }
-        }
 
-        if (g_DEBUG_MODE == DEBUG.ON && colliding) {
-            console.log(`${this.id} collides with ${sprite.id}`);
+            if (g_DEBUG_MODE == DEBUG.ON && colliding) {
+                console.log(`${this.id} collides with ${sprite.id}`);
+            }
+
         }
 
         return colliding;
@@ -720,6 +725,7 @@ class Sprite {
     update() {
         this.addForce(this._accel);
         this.translate(this._velocity.x, this._velocity.y);
+        this.
         this.checkBounds();
         if (this.visible) { this.draw(); }
     }
