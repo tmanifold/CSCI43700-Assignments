@@ -379,7 +379,9 @@ class Sprite {
         this._height = height;
 
         this._id = Date.now();
-        this._name = `sprite-${img}`;
+        // get baseName from path
+        // https://stackoverflow.com/questions/3820381/need-a-basename-function-in-javascript#comment29942319_15270931
+        this._name = `sprite-${img.replace(/\s/g, '').split(/[\\/]/).pop()}`;
 
         this._pos = new Vector2(x, y);
         this._velocity = new Vector2();
@@ -467,8 +469,8 @@ class Sprite {
     */
     setMoveAngle(degrees) {
         let rad = Angle.toRadians(degrees);
-        this._moveAngle = rad;
         this._velocity.angle = rad;
+        this._moveAngle = this._velocity.angle;
     }
 
     /**
@@ -494,10 +496,10 @@ class Sprite {
     rotateImageAngle(degrees) { this.setImageAngle(this.imageAngle + degrees); }
 
     /**
-        Modify moveAngle and imageAngle simultaneously.
+        set moveAngle and imageAngle simultaneously.
         @param {number} degrees - number of degrees to rotate.
     */
-    rotate(degrees) {
+    setAngle(degrees) {
         this.rotateMoveAngle(degrees);
         this.rotateImageAngle(degrees);
     }
@@ -558,6 +560,8 @@ class Sprite {
 
     /* END FORCES */
 
+    /* SPRITE INTERACTIONS */
+
     /**
         Get the angle to the specified sprite.
         @param {Sprite} sprite - the target sprite.
@@ -577,20 +581,15 @@ class Sprite {
         @param {Sprite} sprite - the sprite to check collision with.
         @return {boolean}
     */
-
     collidesWith(sprite) {
         let colliding = false;
 
         // do not detect collision with self
         if (!(Object.is(this, sprite))) {
-
             // only detect collisions between visible sprites.
-
             if (this.visible && sprite.visible) {
-
                 // assume we are colliding
                 colliding = true;
-
                 // test non-colliding states
                 if (this._bounds.left > sprite.bounds.right || // this to right of sprite
                     this._bounds.right < sprite.bounds.left || // this to left of sprite
@@ -604,7 +603,6 @@ class Sprite {
             if (g_DEBUG_MODE == DEBUG.ON && colliding) {
                 console.log(`${this.id} collides with ${sprite.id}`);
             }
-
         }
 
         return colliding;
@@ -621,6 +619,13 @@ class Sprite {
         @param {BOUND_ACTION} action
     */
     setBoundAction(action) { this._boundAction = action; }
+
+    destroy() {
+        let index = this._scene.sprites.findIndex((a) => {
+            return Object.is(this, a);
+        });
+        this._scene.sprites.splice(index, 1);
+    }
 
     /**
         Check if sprite is out of bounds. Has different behavior based on the
@@ -670,19 +675,16 @@ class Sprite {
             case Sprite.BOUND_ACTION.DESTROY:
                 // check left and right
                 let destroy = false;
-                if (this._pos.x > this._scene.width + this._width / 2 || this._pos.x < 0 - this._width / 2) {
+                if (this._pos.x > this._scene.width + this._width || this._pos.x < 0 - this._width ) {
                     destroy = true;
                 }
                 // check top and botton
-                if (this._pos.y > this._scene.height + this._height / 2 || this._pos.y < 0 - this._height / 2) {
+                if (this._pos.y > this._scene.height + this._height || this._pos.y < 0 - this._height) {
                     destroy = true;
                 }
 
                 if (destroy) {
-                    let index = this._scene.sprites.findIndex((a) => {
-                        Object.is(this, a);
-                    });
-                    this._scene.sprites.splice(index, 1);
+                    this.destroy();
                 }
                 break;
             default:
@@ -708,15 +710,32 @@ class Sprite {
         //this._ctx.drawImage(this._image, this.x, this.y, this._width, this._height);
 
         if (g_DEBUG_MODE == DEBUG.ON) {
-            this._ctx.strokeStyle = "green";
+            // draw box around image size
+            this._ctx.strokeStyle = "red";
             this._ctx.strokeRect(xx, yy, this._width, this._height);
             //this._ctx.strokeRect(this.x, this.y, this._width, this._height);
 
-            this._ctx.fillStyle = "red";
+            // draw centerpoint
+            this._ctx.fillStyle = "blue";
             this._ctx.beginPath();
             //this._ctx.arc(this.center.x, this.center.y, 2, 0, 2 * Math.PI)
             this._ctx.arc(0, 0, 2, 0, 2 * Math.PI);
             this._ctx.fill();
+
+            // draw velocity
+            this._ctx.strokeStyle = "green";
+            this._ctx.beginPath();
+            this._ctx.moveTo(0, 0);
+            this._ctx.lineTo(this.speed * Math.cos(this.vel.angle) * 2.5, this.speed * Math.sin(this.vel.angle) * 2.5);
+            this._ctx.stroke();
+
+            // draw image angle
+            this._ctx.strokeStyle = "cyan";
+            this._ctx.beginPath();
+            this._ctx.moveTo(0, 0);
+            this._ctx.lineTo(this.width * Math.cos(this._imageAngle), this.height * Math.sin(this._imageAngle));
+            this._ctx.stroke();
+
         }
 
         this._ctx.restore();
