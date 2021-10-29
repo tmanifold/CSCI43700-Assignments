@@ -10,82 +10,189 @@
 
         <script type="text/javascript">
 
-            function checkKeys(sp) {
-                kb = scene.kb;
+            class Projectile extends Sprite {
+                constructor(scene, source) {
+                    super('./img/livestock/cow side.png', scene);
 
-                if (kb.keys['w']) {
-                    sp.addForce(new Vector2(0, -1));
+                    this.setBoundAction(Sprite.BOUND_ACTION.DESTROY);
+
+                    this.height = 20;
+                    this.width = 20;
+
+                    this.translate(source.x, source.y);
+
+                    // get a unit vector from the source image angle and scale it appropriately
+                    this.vel = Vector2.fromPolar(1, Angle.toRadians(source.imageAngle));
+                    this.vel.scaleBy(source._projectileSpeed);
                 }
-                if (kb.keys['a']) {
-                    sp.addForce(new Vector2(-1, 0));
-                }
-                if (kb.keys['s']) {
-                    sp.addForce(new Vector2(0, 1));
-                }
-                if (kb.keys['d']) {
-                    sp.addForce(new Vector2(1, 0));
+
+                update() {
+                    super.update();
                 }
             }
 
-            function spawnBurger(scene) {
+            class Cow extends Sprite{
+                constructor(scene) {
+                    super('./img/livestock/cow side.png', scene, 32, 32, scene.width / 2, scene.height / 2);
+                    this._MAX_HITS = 5;
+                    this._hits = 0;
 
-                let burger = new Sprite('./img/burger.png', scene, 50, 50, getRandomInt(scene.width), getRandomInt(scene.height));
-                let vmax = 10;
-                let x = getRandomInt(vmax);
-                let y = getRandomInt(vmax);
-                burger.addForce(new Vector2(x, y));
-                // FIGURE OUT ROATION
+                    this._kb = scene.kb;
+                    this._rotateAmount = 10;
+
+                    this._projectiles = [];
+
+                    this._canFire = true;
+                    this._lastShot = 0;
+                    this._fireRate = 100;
+                    this._projectileSpeed = 10;
+
+                    this._lastHit = 0;
+                    this._invtime = 1000;
+                    this._invuln = false;
+                }
+
+                checkKeys() {
+                    if (this._kb.keys['w']) {
+                        this.addForce(new Vector2(0, -1));
+                    }
+
+                    if (this._kb.keys['a']) {
+                        this.addForce(new Vector2(-1, 0));
+                    }
+
+                    if (this._kb.keys['s']) {
+                        this.addForce(new Vector2(0, 1));
+                    }
+
+                    if (this._kb.keys['d']) {
+                        this.addForce(new Vector2(1, 0));
+                    }
+
+                    if (this._kb.keys['ArrowLeft']) {
+                        this.rotateImageAngle(-this._rotateAmount);
+                    }
+
+                    if (this._kb.keys['ArrowRight']) {
+                        this.rotateImageAngle(this._rotateAmount);
+                    }
+
+                    if (this._kb.keys['ArrowUp']) {
+                        this.fire();
+                    }
+                }
+
+                fire() {
+                    if (this._canFire)  {
+                        new Projectile(scene, this);
+                        this._canFire = false;
+
+                        this._lastShot = Date.now();
+                    }
+                }
+
+                // process getting hit
+                getHit() {
+                    this._hits++;
+                    this._invuln = true;
+                    this._lastHit = Date.now();
+                }
+
+                shotTimer() {
+                    if (this._lastShot + this._fireRate < Date.now()) {
+                        this._canFire = true;
+                    }
+                }
+
+                iframesTimer() {
+                    if (this._lastHit + this._invtime > Date.now()) {
+                        this._invuln = false;
+                    }
+                }
+
+                update() {
+                    super.update();
+                    this.checkKeys();
+                    this.shotTimer();
+                }
             }
 
+            class Burger extends Sprite {
+                constructor(scene, cow) {
+                    super('./img/burger.png', scene, 50, 50, getRandomInt(scene.width), getRandomInt(scene.height));
+
+                    const VMAX = 10;
+
+                    this._thecow = cow;
+
+                    this._dx = getRandomInt(VMAX);
+                    this._dy = getRandomInt(VMAX);
+
+                    this.addForce(new Vector2(this._dx, this._dy));
+                }
+
+                update() {
+                    super.update();
+                    // first check if we hit the cow
+                    if (!this._thecow._invuln) {
+                        if (this.collidesWith(this._thecow)) {
+                            this._thecow.getHit();
+
+                            this.destroy();
+                        }
+                    }
+
+                    for (const p of this._thecow._projectiles) {
+                        if (this.collidesWith(p)) {
+                            this.destroy();
+                            p.destroy();
+                        }
+                    }
+
+                }
+            }
+
+            class Sheep extends Sprite {
+                constructor(scene) {
+                    super('./img/livestock/sheep side.png', scene, 30, 30, getRandomInt(scene.width), getRandomInt(scene.height));
+
+                    const VMAX = 10;
+
+                    this._dx = getRandomInt(VMAX);
+                    this._dy = getRandomInt(VMAX);
+
+                    this.addForce(new Vector2(this._dx, this._dy));
+                }
+
+                update() {
+                    super.update();
+                }
+            }
+
+            // get rand int in range with negative
             // https://stackoverflow.com/a/13455101
             function getRandomInt(max) {
                 return Math.ceil(Math.random() * max) * (Math.round(Math.random()) ? 1 : -1);
             }
 
+            // Game initialization
             function init() {
 
                 setDebugMode(DEBUG.ON);
 
-                scene = new Scene('demo');
-                scene.setBorder("1px solid gray");
-
-                Cow = new Sprite('./img/livestock/cow side.png', scene, 50, 50, scene.width / 2, scene.height / 2);
-
-
-                document.getElementById("btnSceneStart").onclick = scene.start;
-                document.getElementById("btnSceneStop").onclick = scene.stop;
-
-                //sp = new Sprite('./img/burger.png', scene, 50, 50, 50, 100);
-                //sp.addForce(new Vector2(5, 0));
-                //sp.setBoundAction(Sprite.BOUND_ACTION.BOUNCE);
-
-                //sp2 = new Sprite('./img/burger.png', scene, 50, 50, 300, 100);
-                //sp2.addForce(new Vector2(-5, 0));
-
-                for (let i = 0; i < 5; i++) {
-                    spawnBurger(scene);
-                }
+                scene = new Scene('BovineFury');
+                scene.setBorder('1px solid gray');
 
                 scene.start();
 
-                // t = new Timer(() => {
-                //     console.log("timer done.");
-                // }, 100 * 1000);
-                //
-                // document.getElementById("btnTimerStart").onclick = t.start.bind(t);
-                // document.getElementById("btnTimerStop").onclick = t.stop.bind(t);
-                // document.getElementById("btnTimerPause").onclick = t.pause.bind(t);
+                Cow = new Cow(scene);
             }
 
+            // Main game loop
             function update() {
-                //document.getElementById("timer").innerHTML = t.time / 1000;
-
-                this.checkKeys(Cow);
-
                 scene.clear();
 
                 for (const sprite of scene.sprites) {
-                    //sprite.rotateImageAngle(0.5);
                     sprite.update();
                 }
             }
@@ -95,19 +202,9 @@
 
     <body onload="init()">
 
-        <h3> Game Engine Demo</h3>
+        <h3>Bovine Fury</h3>
 
-        Timer: <label id="timer">time</label><br />
-        <button id="btnTimerStart">Start</button>
-        <button id="btnTimerStop">Stop</button>
-        <button id="btnTimerPause">Pause</button>
-        <div id="demo" style="border: 1px solid red; padding:10px;"></div>
-
-        <div id="debugConsole" style="border: 1px solid red; padding: 10px; margin-top: 10px;">
-            Debug<br />
-
-            <button id="btnSceneStart">Start Scene</button><button id="btnSceneStop">Stop Scene</button>
-        </div>
+        <div id="demo" style="padding:10px;"></div>
 
     </body>
 
