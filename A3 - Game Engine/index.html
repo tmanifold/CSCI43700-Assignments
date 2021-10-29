@@ -234,7 +234,7 @@
                 num_enemies = 2;
 
                 last_spawn = Date.now();
-                spawn_interval = 10 * 1000;
+                spawn_interval = 2 * 1000;
             }
 
             // Main game loop
@@ -243,8 +243,8 @@
 
                 if (Cow._isAlive) {
 
-                    scene._context.font = '14pt sans serif';
-                    scene._context.fillText(`HP: ${Cow._MAX_HITS - Cow._hits}/${Cow._MAX_HITS}`, 25, 25);
+                    scene._context.font = '14pt sans-serif';
+                    scene._context.fillText(`HP: ${Cow._MAX_HITS - Cow._hits}/${Cow._MAX_HITS}`, 20, 25);
                     scene._context.fillText(`Score: ${score}`, scene._canvas.width - 100, 25);
 
                     for (const sprite of scene.sprites) {
@@ -270,8 +270,8 @@
                     }
 
                 } else {
-                    scene._context.font = '48pt sans serif';
-                    scene._context.fillText('You died.', scene.width / 2, scene.height / 2);
+                    scene._context.font = '48px sans-serif';
+                    scene._context.fillText('You died.', 225, 100);
                     scene.end();
                 }
 
