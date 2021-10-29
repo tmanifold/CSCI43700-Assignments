@@ -17,7 +17,7 @@ function setDebugMode(mode) { g_DEBUG_MODE = mode; }
 /**
     A utility function to validate the type of objects.
     @param {Type} type - the type to check
-    @param {...} args - the objects to check
+    @param {...Object} args - the objects to check
     @throws {TypeError} Throws TypeError if an argument is not of the specified `type`.
  */
 const validateType = (type, ...args) => {

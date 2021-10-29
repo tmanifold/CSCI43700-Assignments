@@ -4,7 +4,17 @@
     @class
 */
 class Angle {
+    /**
+        @param {number} degrees
+        @return {number} radians
+        @static
+    */
     static toRadians(degrees) { return degrees * Math.PI / 180; }
+    /**
+        @param {number} radians
+        @return {number} degrees
+        @static
+    */
     static toDegrees(radians) { return radians * 180 / Math.PI; }
 }
 
@@ -134,10 +144,6 @@ class Vector2 {
         return new Vector2(this.norm, this.angle);
     }
 
-    static fromPolar(r, theta) {
-        return new Vector2(r * Math.cos(theta), r * Math.sin(theta), true);
-    }
-
     /**
         @prop {Vector2} unit - A unit vector representation of this Vector2
     */
@@ -185,6 +191,17 @@ class Vector2 {
             console.log(e);
             return null;
         }
+    }
+
+    /**
+        Get a vector2 from polar coordinates.
+        @param {number} r - radius
+        @param {number} theta - angle
+        @return {Vector2}
+        @static
+    */
+    static fromPolar(r, theta) {
+        return new Vector2(r * Math.cos(theta), r * Math.sin(theta), true);
     }
 
     /**
