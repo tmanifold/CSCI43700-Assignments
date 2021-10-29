@@ -21,9 +21,11 @@
 
                     this.translate(source.x, source.y);
 
+                    this.imageAngle = source.imageAngle;
+
                     // get a unit vector from the source image angle and scale it appropriately
                     this.vel = Vector2.fromPolar(1, Angle.toRadians(source.imageAngle));
-                    this.vel.scaleBy(source._projectileSpeed);
+                    this.vel.scaleBy(-source._projectileSpeed);
                 }
 
                 update() {
@@ -36,6 +38,7 @@
                     super('./img/livestock/cow side.png', scene, 32, 32, scene.width / 2, scene.height / 2);
                     this._MAX_HITS = 5;
                     this._hits = 0;
+                    this._isAlive = true;
 
                     this._kb = scene.kb;
                     this._rotateAmount = 10;
@@ -44,7 +47,7 @@
 
                     this._canFire = true;
                     this._lastShot = 0;
-                    this._fireRate = 100;
+                    this._fireRate = 200;
                     this._projectileSpeed = 10;
 
                     this._lastHit = 0;
@@ -84,7 +87,7 @@
 
                 fire() {
                     if (this._canFire)  {
-                        new Projectile(scene, this);
+                        this._projectiles.push(new Projectile(scene, this));
                         this._canFire = false;
 
                         this._lastShot = Date.now();
@@ -94,6 +97,11 @@
                 // process getting hit
                 getHit() {
                     this._hits++;
+
+                    if (this._hits == this._MAX_HITS) {
+                        this._isAlive = false;
+                    }
+
                     this._invuln = true;
                     this._lastHit = Date.now();
                 }
@@ -114,6 +122,7 @@
                     super.update();
                     this.checkKeys();
                     this.shotTimer();
+                    this.iframesTimer();
                 }
             }
 
@@ -137,7 +146,6 @@
                     if (!this._thecow._invuln) {
                         if (this.collidesWith(this._thecow)) {
                             this._thecow.getHit();
-
                             this.destroy();
                         }
                     }
@@ -146,15 +154,20 @@
                         if (this.collidesWith(p)) {
                             this.destroy();
                             p.destroy();
+
+                            score += 10;
+                            spawn_interval--;
+                            num_enemies--;
                         }
                     }
-
                 }
             }
 
             class Sheep extends Sprite {
-                constructor(scene) {
+                constructor(scene, cow) {
                     super('./img/livestock/sheep side.png', scene, 30, 30, getRandomInt(scene.width), getRandomInt(scene.height));
+
+                    this._thecow = cow;
 
                     const VMAX = 10;
 
@@ -166,6 +179,23 @@
 
                 update() {
                     super.update();
+                    // first check if we hit the cow
+
+                    if (this.collidesWith(this._thecow)) {
+                        this.destroy();
+                        this._thecow._hits = 0;
+                        score += 100;
+                        spawn_interval += 100;
+                    }
+
+                    for (const p of this._thecow._projectiles) {
+                        if (this.collidesWith(p)) {
+                            this.destroy();
+                            p.destroy();
+                            score -= 50;
+                            num_enemies--;
+                        }
+                    }
                 }
             }
 
@@ -178,23 +208,76 @@
             // Game initialization
             function init() {
 
-                setDebugMode(DEBUG.ON);
+                //setDebugMode(DEBUG.ON);
 
                 scene = new Scene('BovineFury');
                 scene.setBorder('1px solid gray');
+                scene.delay = 25;
 
                 scene.start();
 
+                // stop arrow default behavior https://stackoverflow.com/a/8916697
+                window.addEventListener("keydown", function(e) {
+                    if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+                        e.preventDefault();
+                    }
+                }, false);
+
                 Cow = new Cow(scene);
+
+                MAX_ENEMIES = 25;
+                score = 0;
+
+                new Burger(scene, Cow);
+                new Sheep(scene, Cow);
+
+                num_enemies = 2;
+
+                last_spawn = Date.now();
+                spawn_interval = 10 * 1000;
             }
 
             // Main game loop
             function update() {
                 scene.clear();
 
-                for (const sprite of scene.sprites) {
-                    sprite.update();
+                if (Cow._isAlive) {
+
+                    scene._context.font = '14pt sans serif';
+                    scene._context.fillText(`HP: ${Cow._MAX_HITS - Cow._hits}/${Cow._MAX_HITS}`, 25, 25);
+                    scene._context.fillText(`Score: ${score}`, scene._canvas.width - 100, 25);
+
+                    for (const sprite of scene.sprites) {
+                        sprite.update();
+                    }
+
+                    if (Date.now() - last_spawn > spawn_interval && num_enemies < MAX_ENEMIES) {
+                        let e;
+                        if (Math.random() < 0.10) {
+                            e = new Sheep(scene, Cow);
+                        } else {
+                            e = new Burger(scene, Cow);
+                        }
+
+                        while (e.collidesWith(Cow)) {
+                            e.hide();
+                        }
+                        e.show();
+
+                        num_enemies++;
+
+                        last_spawn = Date.now();
+                    }
+
+                } else {
+                    scene._context.font = '48pt sans serif';
+                    scene._context.fillText('You died.', scene.width / 2, scene.height / 2);
+                    scene.end();
                 }
+
+
+
+
             }
 
         </script>
@@ -203,6 +286,13 @@
     <body onload="init()">
 
         <h3>Bovine Fury</h3>
+        Controls: <br />
+            Move: WASD<br />
+            Rotate: Left and Right arrows<br />
+            Shoot: Up arrow <br/>
+            <br />
+            Shoot the burgers. Sheep will restore hitpoints. You can get hit 5 times before losing.
+
 
         <div id="demo" style="padding:10px;"></div>
 

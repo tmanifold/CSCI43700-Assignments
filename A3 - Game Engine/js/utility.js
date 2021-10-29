@@ -20,8 +20,9 @@ class Vector2 {
         @constructs Vector2
         @param {number} a - the component corresponding to x-value
         @param {number} b - the component corresponding to y-value
+        @param {boolean} isPolar - if the coordinates are polar.
     */
-    constructor(a=0, b=0) {
+    constructor(a=0, b=0, isPolar = false) {
         /** @prop {number} */
         this.x = a;
         /** @prop {number} */
@@ -89,11 +90,6 @@ class Vector2 {
 
         this.x = this.norm * Math.cos(theta);
         this.y = this.norm * Math.sin(theta);
-
-        // sanity check to make sure we did math right
-        // if (!(this.angle === theta)) {
-        //     console.log(`VECTOR ERROR: ${this.angle} =/= ${theta}`)
-        // }
     }
 
     /**
@@ -117,10 +113,6 @@ class Vector2 {
         let vy = r * Math.sin(this.angle);
         this.x = vx;
         this.y = vy;
-
-        // if (!(this.magnitude === r)) {
-        //     console.log(`VECTOR ERROR: ${this.magnitude} =/= ${r}`);
-        // }
     }
 
     /**
@@ -133,6 +125,18 @@ class Vector2 {
         @param {number} r - the new magnitude
     */
     setNorm(r) { this.magnitude = r; }
+
+    /**
+        Get this vector in polar coordinates.
+        @return {Array.<number, number>} Array consisting of <r, theta>.
+    */
+    toPolar() {
+        return new Vector2(this.norm, this.angle);
+    }
+
+    static fromPolar(r, theta) {
+        return new Vector2(r * Math.cos(theta), r * Math.sin(theta), true);
+    }
 
     /**
         @prop {Vector2} unit - A unit vector representation of this Vector2

@@ -394,6 +394,8 @@ class Sprite {
         this._bounds = new SpriteBoundary(this);
 
         this._scene.addSprite(this);
+
+        this._deleted = false;
     }
 
     /* PROPERTIES */
@@ -625,6 +627,8 @@ class Sprite {
             return Object.is(this, a);
         });
         this._scene.sprites.splice(index, 1);
+        this.hide();
+        if (g_DEBUG_MODE == DEBUG.ON) console.log(this._scene.sprites);
     }
 
     /**
@@ -685,6 +689,7 @@ class Sprite {
 
                 if (destroy) {
                     this.destroy();
+                    this._deleted = true;
                 }
                 break;
             default:
