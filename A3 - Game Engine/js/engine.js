@@ -45,20 +45,27 @@ class Mouse {
         document.onmouseup   = this.updateButtonState.bind(this);
     }
 
+    /** @prop {number} */
     get x() { return this._x; }
-
+    /** @prop {number} */
     get y() { return this._y; }
 
+    /** @return {Vector2} the x,y mouse position */
     getPos() { return new Vector2(this._x, this._y); }
 
+    /** @listens {MouseEvent} */
     updatePosition(e) {
         this._x = e.pageX;
         this._y = e.pageY;
     }
 
+    /** @listens {MouseEvent} */
     updateButtonState(e) { this._buttons = e.buttons; }
 
+    /** set visible flag to falseS */
     hide() { this._visible = false; }
+
+    /** set visible flag to true */
     show() { this._visible = true; }
 } // end Mouse
 
@@ -220,18 +227,21 @@ class Scene {
     */
     setDelay(d) { this._delay = d; }
 
+    /** @prop {number} */
     set width(w) { this.setWidth(w); }
     get width() { return this.getWidth(); }
 
     setWidth(w) { this._canvas.width = w; }
     getWidth() { return this._canvas.width; }
 
+    /** @prop {number} */
     set height(h) { this.setHeight(h); }
     get height() { return this.getHeight(); }
 
     setHeight(h) { this._canvas.height = h; }
     getHeight() { return this._canvas.height; }
 
+    /** @prop {Object.<number, number>} */
     set size(sz) { this.setSize(sz.width, sz.height); }
     get size() { return this.getSize(); }
 
@@ -248,8 +258,10 @@ class Scene {
         this._canvas.height = height;
     }
 
+    /** @return {Object.<number, number>} */
     getSize() { return {width: this._canvas.width, height: this._canvas.height}; }
 
+    /** @prop {string} sets background color */
     set backColor(color) { this.setBgColor(color); }
 
     /**
@@ -258,11 +270,18 @@ class Scene {
     */
     setBgColor(color) { this._canvas.style.backgroundColor = color; }
 
+    /** set border color
+        @param {string} border - border style
+    */
     setBorder(border) { this._canvas.style.border = border; }
 
+    /** @prop {Array.<Sprite>} */
     get sprites() { return this._sprites; }
     set sprites(sp) { this.setSprites(sp); }
 
+    /** Set the sprites array
+        @param {Array.<Sprite>} sp
+    */
     setSprites(sp) {
         try {
             validateType(Sprite, ...sp);
@@ -272,6 +291,11 @@ class Scene {
         }
     }
 
+    /** Append sprites to the sprites array
+        @param {Sprite} s1
+        @param {...Sprite} sargs - additional sprites
+        @throws {TypeError} if a sprite isnt valid.
+    */
     addSprite(s1, ...sargs) {
         try {
             validateType(Sprite, s1, ...sargs);
@@ -622,6 +646,7 @@ class Sprite {
     */
     setBoundAction(action) { this._boundAction = action; }
 
+    /** remove this sprite from the list of sprites in the scene */
     destroy() {
         let index = this._scene.sprites.findIndex((a) => {
             return Object.is(this, a);
@@ -746,6 +771,7 @@ class Sprite {
         this._ctx.restore();
     }
 
+    /** update sprite state. call each frame */
     update() {
         this.addForce(this._accel);
         this.translate(this._velocity.x, this._velocity.y);
