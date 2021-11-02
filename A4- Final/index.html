@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>Game Engine Demo</title>
+
+        <script type="text/javascript" src="./js/engine.js"></script>
+        <script type="text/javascript" src="./js/utility.js"></script>
+
+        <script type="text/javascript">
+
+            // Game initialization
+            function init() {
+
+                setDebugMode(DEBUG.ON);
+
+                // stop arrow default behavior https://stackoverflow.com/a/8916697
+                window.addEventListener("keydown", function(e) {
+                    if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+                        e.preventDefault();
+                    }
+                }, false);
+
+                scene = new Scene('BovineFury');
+                scene.setBorder('1px solid gray');
+
+                scene.start();
+            }
+
+            // Main game loop
+            function update() {
+                scene.clear();
+
+
+                for (const sprite of scene.sprites) {
+                    sprite.update();
+                }
+
+                scene.mouse.update();
+            }
+
+        </script>
+    </head>
+
+    <body onload="init()">
+
+        <h3>Bovine Fury 2</h3>
+
+
+        <div id="demo" style="padding:10px;"></div>
+
+    </body>
+
+</html>
