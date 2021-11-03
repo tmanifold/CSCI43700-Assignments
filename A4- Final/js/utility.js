@@ -157,7 +157,7 @@ class Vector2 {
         @return {Vector2} the resulting vector sum
     */
     static add(v1, v2, ...vx) {
-        Vector2.validate(v1, v2, ...vx);
+        //Vector2.validate(v1, v2, ...vx);
 
         let temp = v1.addWith(v2);
 
@@ -183,6 +183,12 @@ class Vector2 {
         }
     }
 
+    /**
+        Scale the magnitude of the vector v by scalar m.
+        @param {Vector2} v - The Vector2 to be scaled.
+        @param {number} m - the scalar
+        @return {Vector2|null} Returns the scaled Vector2 or null if an exception occurs.
+    */
     static scale(v, m) {
         try {
             Vector2.validate(v);
@@ -208,7 +214,7 @@ class Vector2 {
         Validates that the given parameter is a Vector2
 
         @param {...Vector2} vx - vectors to validate
-        @throws {TypeError} Thrown if v is not a Vector2
+        @throws {TypeError} Throws TypeError if v is not a Vector2
     */
     static validate(...vx) {
         for (const v of vx) {
