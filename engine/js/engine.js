@@ -23,7 +23,7 @@ function setDebugMode(mode) { g_DEBUG_MODE = mode; }
 const validateType = (type, ...args) => {
     for (const arg of args) {
         if (!(arg instanceof type)) {
-            throw new TypeError(`${arg} must be of type: ${type}`);
+            throw new TypeError(`${arg}[${arg.constructor.name}]: must be ${type}`);
         }
     }
 }
@@ -33,15 +33,16 @@ const validateType = (type, ...args) => {
     @class
 */
 class Mouse {
-    constructor(scene) {
+    constructor(scene, style='auto') {
         this._x = 0;
         this._y = 0;
         this._buttons = {};
         this._visible = true;
         this._scene = scene;
+        this._canvas = scene._canvas;
         this._ctx = scene._context;
         this._pos = this.getPos();
-        this._image = null;
+        this._cursorStyle = style;
 
         document.onmousemove = this.updatePosition.bind(this);
         document.onmousedown = this.updateButtonState.bind(this);
@@ -54,21 +55,14 @@ class Mouse {
     get y() { return this._y; }
 
     /** @prop {Image} Image to use for the mouse cursor */
-    get image() { return this._image; }
-    set image(i) { this.setImage(i); }
+    get style() { return this._cursorStyle; }
+    set style(s) { this.setStyle(s); }
 
-    /**
-        set the mouse cursor image
-        @param {Image} i - image object
-    */
-    setImage(i) {
-        try {
-            validateType(Image, i);
-            this._image = i;
-        } catch (e) {
-            console.log(e);
-        }
+    setStyle(s) {
+        this._cursorStyle = s;
+        this._canvas.style.cursor = this._cursorStyle;
     }
+
 
     /** @return {Vector2} the x,y mouse position */
     getPos() { return new Vector2(this._x, this._y); }
@@ -85,18 +79,26 @@ class Mouse {
     updateButtonState(e) { this._buttons = e.buttons; }
 
     /** set visible flag to falseS */
-    hide() { this._visible = false; }
+    hide() {
+        this._visible = false;
+        this._canvas.style.cursor = 'none';
+    }
 
     /** set visible flag to true */
-    show() { this._visible = true; }
+    show() {
+        this._visible = true;
+        this._canvas.style.cursor = this._cursorStyle;
+    }
 
     /** Run each frame to draw custom mouse cursor if needed **/
     update() {
-        if (this._visible) { this.draw(); }
+        this.drawDebugInfo();
     }
 
     /** Draw custom cursor or debug info */
-    draw() {
+    drawDebugInfo() {
+        this._ctx.save();
+
         if (g_DEBUG_MODE == DEBUG.ON) {
 
             this._ctx.font = '8pt sans-serif';
@@ -104,24 +106,22 @@ class Mouse {
             this._ctx.fillText(`x: ${this._x} | y: ${this._y}`, this._x, this.y);
         }
 
-        if (this._visible) {
-            this.drawCrosshair();
-        }
+        this._ctx.restore();
     }
-
-    drawCrosshair(color = "red", radius = 15) {
-
-        this._ctx.strokeStyle = color;
-
-        this._ctx.beginPath();
-        this._ctx.arc(this._x, this._y, radius, 0, 2 * Math.PI);
-        this._ctx.stroke();
-
-        this._ctx.fillStyle = color;
-        this._ctx.beginPath();
-        this._ctx.arc(this._x, this._y, 2, 0, 2 * Math.PI);
-        this._ctx.fill();
-    }
+    //
+    // drawCrosshair(color = "red", radius = 15) {
+    //
+    //     this._ctx.strokeStyle = color;
+    //
+    //     this._ctx.beginPath();
+    //     this._ctx.arc(this._x, this._y, radius, 0, 2 * Math.PI);
+    //     this._ctx.stroke();
+    //
+    //     this._ctx.fillStyle = color;
+    //     this._ctx.beginPath();
+    //     this._ctx.arc(this._x, this._y, 2, 0, 2 * Math.PI);
+    //     this._ctx.fill();
+    // }
 
 } // end Mouse
 
@@ -235,7 +235,6 @@ class Timer {
 */
 class Scene {
     /**
-        @constructs Scene
         @param {string} target - id of the target element in which to create the canvas. If target is not specified or doesn't exist, the canvas will be appended to the document body.
         @param {number} width=640
         @param {number} height=480
