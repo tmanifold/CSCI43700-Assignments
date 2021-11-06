@@ -100,19 +100,16 @@ class Mouse {
 
     /** Run each frame to draw custom mouse cursor if needed **/
     update() {
-        this.drawDebugInfo();
+        if (g_DEBUG_MODE == DEBUG.ON) this.drawDebugInfo();
     }
 
     /** Draw custom cursor or debug info */
     drawDebugInfo() {
         this._ctx.save();
 
-        if (g_DEBUG_MODE == DEBUG.ON) {
-
-            this._ctx.font = '8pt sans-serif';
-            this._ctx.fillStyle = 'black';
-            this._ctx.fillText(`x: ${this._x} | y: ${this._y}`, this._x, this.y);
-        }
+        this._ctx.font = '8pt sans-serif';
+        this._ctx.fillStyle = 'black';
+        this._ctx.fillText(`x: ${this._x} | y: ${this._y}`, this._x, this.y);
 
         this._ctx.restore();
     }
@@ -497,6 +494,7 @@ class Sprite {
         this._height = height;
 
         this._id = Date.now();
+
         // get baseName from path
         // https://stackoverflow.com/questions/3820381/need-a-basename-function-in-javascript#comment29942319_15270931
         this._name = `sprite-${img.replace(/\s/g, '').split(/[\\/]/).pop()}`;
@@ -507,7 +505,9 @@ class Sprite {
 
         this._imageAngle = 0;
         this._moveAngle  = 0;
+
         this._hidden = false;
+
         this._boundAction = Sprite.BOUND_ACTION.WRAP;
         this._bounds = new SpriteBoundary(this);
 
@@ -577,7 +577,7 @@ class Sprite {
         @param {number} x - amount in x direction
         @param {number} y - amount in y direction.
     */
-    translate(x, y) { this._pos.addWith(new Vector2(x,y)); }
+    translate(x, y) { this._pos.addWith(new Vector2(x, y)); }
 
     /** @prop {number} moveAngle - the direction of motion. */
     get moveAngle() { return Angle.toDegrees(this._velocity.angle); }
@@ -616,10 +616,19 @@ class Sprite {
     rotateImageAngle(degrees) { this.setImageAngle(this.imageAngle + degrees); }
 
     /**
-        set moveAngle and imageAngle simultaneously.
-        @param {number} degrees - number of degrees to rotate.
+        set moveAngle and imageAngle simultaneously. 
+        @param {number} degrees - new heading in degrees
     */
     setAngle(degrees) {
+        this.setMoveAngle(degrees);
+        this.setImageAngle(degrees);
+    }
+
+    /**
+        rotate move and image angle by the same amount
+        @param {number} degrees - number of degrees to rotate
+    */
+    rotateAngle(degrees) {
         this.rotateMoveAngle(degrees);
         this.rotateImageAngle(degrees);
     }
@@ -682,14 +691,55 @@ class Sprite {
         @param {Sprite} sprite - the target sprite.
         @return {number} angle in degrees
     */
-    angleTo(sprite) { return Angle.toDegrees(Math.atan2(this.x - sprite.x, this.y - sprite.y)) + 90; }
+    angleToSprite(sprite) { return Angle.toDegrees(Math.atan2(sprite.y - this.y, sprite.x - this.x)); }
+    /**
+        get angle to the specified coordinates
+        @param {number} x
+        @param {number} y
+        @return {number} angle to the specified coordinates. expressed in degrees.
+    */
+    angleToPos(x, y) { return Angle.toDegrees(Math.atan2(y - this.y, x - this.x)); }
+    /**
+        Get angle to the specified vector
+        @param {Vector2} vec
+        @return {number} angle to the specified vector. expressed in degrees.
+    */
+    angleToVec(vec) { return Angle.toDegrees(Math.atan2(vec.y - this.y, vec.x - this.x)); }
+
+    /**
+        Get angle to the mouse
+        @param {Mouse}
+        @return {number} angle in degrees
+    */
+    angleToMouse(mouse) { return Angle.toDegrees(Math.atan2(mouse.y - this.y, mouse.x - this.x)); }
 
     /**
         Get the distance to the specified sprite.
         @param {Sprite} sprite - the target sprite.
         @return {number} distance between the two sprites.
     */
-    distanceTo(sprite) { return new Vector2(this.x - sprite.x, this.y - sprite.y).norm; }
+    distanceTo(sprite) { return Math.hypot(this.x - sprite.x, this.y - sprite.y); }
+
+    /**
+        get distance to the specified coordinates
+        @param {number} x
+        @param {number} y
+        @return {number} distance to the specified coordinates.
+    */
+    distanceToPos(x, y) { return Math.hypot(this.x - x, this.y - y); }
+    /**
+        Get distance to the specified vector
+        @param {Vector2} vec
+        @return {number} distance between vectors.
+    */
+    distanceToVec(vec) { return Math.hypot(this.x - vec.x, this.y - vec.y); }
+
+    /**
+        Get distance to the mouse
+        @param {Mouse}
+        @return {number} euclidean distance to mouse
+    */
+    distanceToMouse(mouse) { return Math.hypot(this.x - mouse.x, this.y - mouse.y); }
 
     /**
         Determine if colliding with the given sprite.
@@ -811,6 +861,16 @@ class Sprite {
         }
     }
 
+    /* RENDERING */
+
+    /**
+        Pre-render sprite offscreen.
+        @return {canvas} a canvas element containing the prerendered sprite.
+    */
+    prerender() {
+
+    }
+
     /**
         Draw self on the canvas.
         This should probably never be called by the user. This should only be
@@ -828,36 +888,43 @@ class Sprite {
         this._ctx.drawImage(this._image, xx, yy, this._width, this._height);
         //this._ctx.drawImage(this._image, this.x, this.y, this._width, this._height);
 
-        if (g_DEBUG_MODE == DEBUG.ON) {
-            // draw box around image size
-            this._ctx.strokeStyle = "red";
-            this._ctx.strokeRect(xx, yy, this._width, this._height);
-            //this._ctx.strokeRect(this.x, this.y, this._width, this._height);
-
-            // draw centerpoint
-            this._ctx.fillStyle = "blue";
-            this._ctx.beginPath();
-            //this._ctx.arc(this.center.x, this.center.y, 2, 0, 2 * Math.PI)
-            this._ctx.arc(0, 0, 2, 0, 2 * Math.PI);
-            this._ctx.fill();
-
-            // draw velocity
-            this._ctx.strokeStyle = "green";
-            this._ctx.beginPath();
-            this._ctx.moveTo(0, 0);
-            this._ctx.lineTo(this.speed * Math.cos(this.vel.angle) * 2.5, this.speed * Math.sin(this.vel.angle) * 2.5);
-            this._ctx.stroke();
-
-            // draw image angle
-            this._ctx.strokeStyle = "cyan";
-            this._ctx.beginPath();
-            this._ctx.moveTo(0, 0);
-            this._ctx.lineTo(this.width * Math.cos(this._imageAngle), this.height * Math.sin(this._imageAngle));
-            this._ctx.stroke();
-        }
+        if (g_DEBUG_MODE == DEBUG.ON) this.drawDebugInfo(xx, yy);
 
         this._ctx.restore();
     }
+
+    drawDebugInfo(xx, yy) {
+        this._ctx.save();
+        // draw box around image size
+        this._ctx.strokeStyle = "red";
+        this._ctx.strokeRect(xx, yy, this._width, this._height);
+        //this._ctx.strokeRect(this.x, this.y, this._width, this._height);
+
+        // draw centerpoint
+        this._ctx.fillStyle = "blue";
+        this._ctx.beginPath();
+        //this._ctx.arc(this.center.x, this.center.y, 2, 0, 2 * Math.PI)
+        this._ctx.arc(0, 0, 2, 0, 2 * Math.PI);
+        this._ctx.fill();
+
+        // draw velocity
+        this._ctx.strokeStyle = "green";
+        this._ctx.beginPath();
+        this._ctx.moveTo(0, 0);
+        this._ctx.lineTo(this.speed * Math.cos(this.vel.angle) * 2.5, this.speed * Math.sin(this.vel.angle) * 2.5);
+        this._ctx.stroke();
+
+        // draw image angle
+        this._ctx.strokeStyle = "cyan";
+        this._ctx.beginPath();
+        this._ctx.moveTo(0, 0);
+        this._ctx.lineTo(this.width * Math.cos(this._imageAngle), this.height * Math.sin(this._imageAngle));
+        this._ctx.stroke();
+
+        this._ctx.restore();
+    }
+
+    /* END RENDERING */
 
     /** update sprite state. call each frame */
     update() {
@@ -866,6 +933,7 @@ class Sprite {
         this.checkBounds();
         if (this.visible) { this.draw(); }
     }
+
 
 } // end Sprite
 
