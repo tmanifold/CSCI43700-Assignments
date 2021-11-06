@@ -38,11 +38,15 @@ class Mouse {
         this._y = 0;
         this._buttons = {};
         this._visible = true;
+
         this._scene = scene;
         this._canvas = scene._canvas;
         this._ctx = scene._context;
+
         this._pos = this.getPos();
+
         this._cursorStyle = style;
+        this.setStyle(style);
 
         document.onmousemove = this.updatePosition.bind(this);
         document.onmousedown = this.updateButtonState.bind(this);
@@ -54,15 +58,19 @@ class Mouse {
     /** @prop {number} */
     get y() { return this._y; }
 
-    /** @prop {Image} Image to use for the mouse cursor */
+    /** @prop {string} style string to use for the mouse cursor */
     get style() { return this._cursorStyle; }
     set style(s) { this.setStyle(s); }
 
+    /**
+        Set the mouse cursor style properties.
+        @param {string} the cursor style
+        @see https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
+    */
     setStyle(s) {
         this._cursorStyle = s;
         this._canvas.style.cursor = this._cursorStyle;
     }
-
 
     /** @return {Vector2} the x,y mouse position */
     getPos() { return new Vector2(this._x, this._y); }
@@ -78,13 +86,13 @@ class Mouse {
     /** @listens {MouseEvent} */
     updateButtonState(e) { this._buttons = e.buttons; }
 
-    /** set visible flag to falseS */
+    /** hide the mouse cursor */
     hide() {
         this._visible = false;
         this._canvas.style.cursor = 'none';
     }
 
-    /** set visible flag to true */
+    /** set cursor to visible */
     show() {
         this._visible = true;
         this._canvas.style.cursor = this._cursorStyle;
@@ -126,29 +134,33 @@ class Mouse {
 } // end Mouse
 
 /**
-    keyboard
+    Represents a keybaord. Listens for keyboard events.
     @class
 */
 class Keyboard {
     constructor(scene) {
-        /** @prop {Object.<string, boolean>} _keyState - dictionary of keystates indicating if a key is pressed */
         this._keyState = {};
         this._scene = scene;
         document.onkeydown = this.updateKeyState.bind(this);
         document.onkeyup = this.resetKeyState.bind(this);
     }
 
-    /** @prop {Array.<string, boolean>} */
+    /**
+        @prop {Object.<string, boolean>} keys - dictionary of keystates indicating if a key is pressed
+        @readonly
+    */
     get keys() { return this._keyState; }
 
     /**
-        Record a keypress
-        @param {Event} e - Triggering keydown event
+        Event handler to record a keypress.
+        @param {KeyboardEvent} e - Triggering keydown event
+        @listens {KeyboardEvent}
     */
     updateKeyState(e) { this._keyState[e.key] = true; }
     /**
-        Reset a key to unpressed
-        @param {Event} e - Triggering keyup event
+        Event handler to reset a key to unpressed
+        @param {KeyboardEvent} e - Triggering keyup event
+        @listens {KeyboardEvent}
     */
     resetKeyState(e) { this._keyState[e.key] = false; }
 } // end Keyboard
@@ -272,11 +284,11 @@ class Scene {
         this._mouse = new Mouse(this);
     }
 
-    /** hide the system mouse pointer in the canvas */
-    hideSystemCursor() { this._canvas.style.cursor = "none"; }
-
-    /** show the system mouse pointer in the canvas */
-    showSystemCursor() { this._canvas.style.cursor = "auto"; }
+    // /** hide the system mouse pointer in the canvas */
+    // hideSystemCursor() { this._canvas.style.cursor = "none"; }
+    //
+    // /** show the system mouse pointer in the canvas */
+    // showSystemCursor() { this._canvas.style.cursor = "auto"; }
 
     /** @prop {Keyboard}
         @readonly */
@@ -291,8 +303,12 @@ class Scene {
         @param {Mouse} m - The mouse object to apply to the scene.
     */
     setMouse(m) {
-        validateType(Mouse, m);
-        this._mouse = m;
+        try {
+            validateType(Mouse, m);
+            this._mouse = m;
+        } catch (e) {
+            console.log(e);
+        }
     }
 
 
