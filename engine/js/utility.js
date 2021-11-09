@@ -123,6 +123,13 @@ class Vector2 {
     }
 
     /**
+        Checks if this vector's components are equal to another.
+        @param {Vector2}
+        @return {boolean}
+    */
+    equals(vec) { return (this.x == vec.x) && (this.y == vec.y); }
+
+    /**
         Adds the components of another vector to this vector.
 
         @param {Vector2} v - The vector to add to this one.
