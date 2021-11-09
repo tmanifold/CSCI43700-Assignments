@@ -22,9 +22,7 @@ function setDebugMode(mode) { g_DEBUG_MODE = mode; }
  */
 const validateType = (type, ...args) => {
     for (const arg of args) {
-        if (!(arg instanceof type)) {
-            throw new TypeError(`${arg}[${arg.constructor.name}]: must be ${type}`);
-        }
+        if (!(arg instanceof type)) throw new TypeError(`${arg}[${arg.constructor.name}]: must be ${type}`);
     }
 }
 
@@ -43,7 +41,7 @@ class Mouse {
         this._canvas = scene._canvas;
         this._ctx = scene._context;
 
-        this._pos = this.getPos();
+        this._pos = new Vector2();
 
         this._cursorStyle = style;
         this.setStyle(style);
@@ -54,9 +52,9 @@ class Mouse {
     }
 
     /** @prop {number} */
-    get x() { return this._x; }
+    get x() { return this._pos.x; }
     /** @prop {number} */
-    get y() { return this._y; }
+    get y() { return this._pos.y; }
 
     /** @prop {string} style string to use for the mouse cursor */
     get style() { return this._cursorStyle; }
@@ -72,15 +70,17 @@ class Mouse {
         this._canvas.style.cursor = this._cursorStyle;
     }
 
-    /** @return {Vector2} the x,y mouse position */
-    getPos() { return new Vector2(this._x, this._y); }
+    /** @prop {Vector2} mouse position vector
+        @readonly
+    */
+    get pos() { return this._pos; }
 
     /** @listens {MouseEvent} */
     updatePosition(e) {
         // this._x = e.pageX;
         // this._y = e.pageY;
-        this._x = e.offsetX;
-        this._y = e.offsetY;
+        this._pos.x = e.offsetX;
+        this._pos.y = e.offsetY;
     }
 
     /** @listens {MouseEvent} */
@@ -109,24 +109,10 @@ class Mouse {
 
         this._ctx.font = '8pt sans-serif';
         this._ctx.fillStyle = 'black';
-        this._ctx.fillText(`x: ${this._x} | y: ${this._y}`, this._x, this.y);
+        this._ctx.fillText(`x: ${this._pos.x} | y: ${this._pos.y}`, this._pos.x, this._pos.y);
 
         this._ctx.restore();
     }
-    //
-    // drawCrosshair(color = "red", radius = 15) {
-    //
-    //     this._ctx.strokeStyle = color;
-    //
-    //     this._ctx.beginPath();
-    //     this._ctx.arc(this._x, this._y, radius, 0, 2 * Math.PI);
-    //     this._ctx.stroke();
-    //
-    //     this._ctx.fillStyle = color;
-    //     this._ctx.beginPath();
-    //     this._ctx.arc(this._x, this._y, 2, 0, 2 * Math.PI);
-    //     this._ctx.fill();
-    // }
 
 } // end Mouse
 
@@ -162,6 +148,7 @@ class Keyboard {
     resetKeyState(e) { this._keyState[e.key] = false; }
 } // end Keyboard
 
+
 class Stopwatch {
     constructor() { this._elapsed = 0; }
 
@@ -178,10 +165,10 @@ class Stopwatch {
     Executes the specified callback after the delay in ms.
     @class
 */
-class Timer {
+class ScheduledTask {
     /**
         Constructs a Timer.
-        @param callback
+        @param {function} callback
         @param {number} delay - how long to wait in ms before executing callback
     */
     constructor(callback, delay) {
@@ -307,7 +294,6 @@ class Scene {
             console.log(e);
         }
     }
-
 
     /** Sets the update delate for the scene.
         @prop {number} d - integer specifying the clock update delate.
@@ -570,7 +556,21 @@ class Sprite {
         @param {number} x
         @param {number} y
     */
-    setPosition(x, y) { this._pos = new Vector2(x, y); }
+    setPosition(x, y) {
+        this._pos.x = x;
+        this._pos.y = y;
+    }
+
+    /** @prop {Vector2} pos - Position vector */
+    get pos() { return this._pos; }
+    set pos(p) {
+        try {
+            Vector2.validate(p);
+            this.setPosition(p.x, p.y);
+        } catch (e) {
+            console.log(e);
+        }
+    }
 
     /**
         Shift by x and y pixels relative to current position.
@@ -616,7 +616,7 @@ class Sprite {
     rotateImageAngle(degrees) { this.setImageAngle(this.imageAngle + degrees); }
 
     /**
-        set moveAngle and imageAngle simultaneously. 
+        set moveAngle and imageAngle simultaneously.
         @param {number} degrees - new heading in degrees
     */
     setAngle(degrees) {
@@ -628,7 +628,7 @@ class Sprite {
         rotate move and image angle by the same amount
         @param {number} degrees - number of degrees to rotate
     */
-    rotateAngle(degrees) {
+    rotate(degrees) {
         this.rotateMoveAngle(degrees);
         this.rotateImageAngle(degrees);
     }
@@ -654,8 +654,12 @@ class Sprite {
         @param {Vector2} vel - The new velocity vector.
     */
     setVelocity(vel) {
-        Vector2.validate(vel);
-        this._velocity = vel;
+        try {
+            Vector2.validate(vel);
+            this._velocity = vel;
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     /** @prop {Vector2} accel - The acceleration vector. */
@@ -938,8 +942,9 @@ class Sprite {
 } // end Sprite
 
 class Sound {
-    constructor() {
+    constructor(source) {
 
+        this._source = source;
     }
 
 } // end Sound
