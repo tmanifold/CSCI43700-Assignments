@@ -691,59 +691,18 @@ class Sprite {
     /* SPRITE INTERACTIONS */
 
     /**
-        Get the angle to the specified sprite.
-        @param {Sprite} sprite - the target sprite.
-        @return {number} angle in degrees
-    */
-    angleToSprite(sprite) { return Angle.toDegrees(Math.atan2(sprite.y - this.y, sprite.x - this.x)); }
-    /**
-        get angle to the specified coordinates
-        @param {number} x
-        @param {number} y
-        @return {number} angle to the specified coordinates. expressed in degrees.
-    */
-    angleToPos(x, y) { return Angle.toDegrees(Math.atan2(y - this.y, x - this.x)); }
-    /**
         Get angle to the specified vector
         @param {Vector2} vec
         @return {number} angle to the specified vector. expressed in degrees.
     */
-    angleToVec(vec) { return Angle.toDegrees(Math.atan2(vec.y - this.y, vec.x - this.x)); }
+    angleTo(vec) { return Angle.toDegrees(Math.atan2(vec.y - this.y, vec.x - this.x)); }
 
-    /**
-        Get angle to the mouse
-        @param {Mouse}
-        @return {number} angle in degrees
-    */
-    angleToMouse(mouse) { return Angle.toDegrees(Math.atan2(mouse.y - this.y, mouse.x - this.x)); }
-
-    /**
-        Get the distance to the specified sprite.
-        @param {Sprite} sprite - the target sprite.
-        @return {number} distance between the two sprites.
-    */
-    distanceTo(sprite) { return Math.hypot(this.x - sprite.x, this.y - sprite.y); }
-
-    /**
-        get distance to the specified coordinates
-        @param {number} x
-        @param {number} y
-        @return {number} distance to the specified coordinates.
-    */
-    distanceToPos(x, y) { return Math.hypot(this.x - x, this.y - y); }
     /**
         Get distance to the specified vector
         @param {Vector2} vec
         @return {number} distance between vectors.
     */
-    distanceToVec(vec) { return Math.hypot(this.x - vec.x, this.y - vec.y); }
-
-    /**
-        Get distance to the mouse
-        @param {Mouse}
-        @return {number} euclidean distance to mouse
-    */
-    distanceToMouse(mouse) { return Math.hypot(this.x - mouse.x, this.y - mouse.y); }
+    distanceTo(vec) { return Math.hypot(this.x - vec.x, this.y - vec.y); }
 
     /**
         Determine if colliding with the given sprite.
@@ -889,7 +848,7 @@ class Sprite {
         let xx = -(this._width / 2);
         let yy = -(this._height / 2);
 
-        this._ctx.drawImage(this._image, xx, yy, this._width, this._height);
+        this._ctx.drawImage(this._image, xx, yy, this._width, this._heigh);
         //this._ctx.drawImage(this._image, this.x, this.y, this._width, this._height);
 
         if (g_DEBUG_MODE == DEBUG.ON) this.drawDebugInfo(xx, yy);
@@ -900,29 +859,29 @@ class Sprite {
     drawDebugInfo(xx, yy) {
         this._ctx.save();
         // draw box around image size
-        this._ctx.strokeStyle = "red";
+        this._ctx.strokeStyle = "grey";
         this._ctx.strokeRect(xx, yy, this._width, this._height);
         //this._ctx.strokeRect(this.x, this.y, this._width, this._height);
 
         // draw centerpoint
-        this._ctx.fillStyle = "blue";
+        this._ctx.fillStyle = "grey";
         this._ctx.beginPath();
         //this._ctx.arc(this.center.x, this.center.y, 2, 0, 2 * Math.PI)
         this._ctx.arc(0, 0, 2, 0, 2 * Math.PI);
         this._ctx.fill();
+
+        // draw image angle
+        this._ctx.strokeStyle = "blue";
+        this._ctx.beginPath();
+        this._ctx.moveTo(0, 0);
+        this._ctx.lineTo(this._width, 0);
+        this._ctx.stroke();
 
         // draw velocity
         this._ctx.strokeStyle = "green";
         this._ctx.beginPath();
         this._ctx.moveTo(0, 0);
         this._ctx.lineTo(this.speed * Math.cos(this.vel.angle) * 2.5, this.speed * Math.sin(this.vel.angle) * 2.5);
-        this._ctx.stroke();
-
-        // draw image angle
-        this._ctx.strokeStyle = "cyan";
-        this._ctx.beginPath();
-        this._ctx.moveTo(0, 0);
-        this._ctx.lineTo(this.width * Math.cos(this._imageAngle), this.height * Math.sin(this._imageAngle));
         this._ctx.stroke();
 
         this._ctx.restore();
