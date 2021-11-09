@@ -1,9 +1,46 @@
 
 /**
-    A utility class to handle conversions between degrees and radians.
+    A utility class to handle angles.
     @class
 */
 class Angle {
+
+    /** @private */
+    #degrees;
+    #radians;
+
+    /** @static {number} TWOPI - Pi multipled by 2 */
+    static TWOPI = Math.PI * 2;
+
+    constructor() {
+        this.#degrees = 0;
+        this.#radians = 0;
+    }
+
+    /** @prop {number} degrees */
+    set deg(d) { this.setDegrees(d); }
+    get deg() { return this.#degrees; }
+
+    setDegrees(deg) {
+
+        if (deg > 360) deg -= 360;
+
+        this.#degrees = deg;
+        this.#radians = Angle.toRadians(deg);
+    }
+
+    /** @prop {number} radians */
+    set rad(r) { this.setRadians(r); }
+    get rad() { return this.#radians; }
+
+    setRadians(rad) {
+
+        if (rad > Angle.TWOPI) rad -= Angle.TWOPI;
+
+        this.#radians = rad;
+        this.#degrees = Angle.toDegrees(rad);
+    }
+
     /**
         @param {number} degrees
         @return {number} radians
@@ -71,6 +108,7 @@ class DebugConsole {
     @class
 */
 class Vector2 {
+
     /**
         @constructs Vector2
         @param {number} a - the component corresponding to x-value
@@ -88,6 +126,7 @@ class Vector2 {
         Adds the components of another vector to this vector.
 
         @param {Vector2} v - The vector to add to this one.
+        @return {Vector2|null}
     */
     addWith(v) {
         try {
@@ -96,8 +135,11 @@ class Vector2 {
             this.x += v.x;
             this.y += v.y;
 
+            return this;
+
         } catch (e) {
             console.log(e);
+            return null;
         }
     }
 
@@ -204,7 +246,7 @@ class Vector2 {
     static add(v1, v2, ...vx) {
         //Vector2.validate(v1, v2, ...vx);
 
-        let temp = v1.addWith(v2);
+        let temp = new Vector2().addWith(v1).addWith(v2);
 
         for (const v of vx) temp.addWith(v);
 
@@ -253,6 +295,27 @@ class Vector2 {
     */
     static fromPolar(r, theta) {
         return new Vector2(r * Math.cos(theta), r * Math.sin(theta), true);
+    }
+
+    /**
+        Calculates the linear interpolation between two Vector2 objects
+        @param {Vector2} v0
+        @param {Vector2} v1
+        @param {number} t
+        @return {Vector2|null} Returns a Vector2 of the linear interpolation or null if an error occurs.
+        @static
+    */
+    static lerp(v0, v1, t) {
+        try {
+            Vector2.validate(v0, v1);
+
+            // Lerp is given by ((1 - t) * v0) + (t * v1);
+            return Vector2.add(Vector2.scale(v0, 1 - t), (Vector2.scale(v1, t)));
+
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
     }
 
     /**
