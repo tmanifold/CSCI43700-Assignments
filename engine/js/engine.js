@@ -390,8 +390,8 @@ class Scene {
     */
     start() {
 
-        this._stopwatch = new Stopwatch();
-        this._stopwatch.start();
+        //this._stopwatch = new Stopwatch();
+        //this._stopwatch.start();
 
         // start frames
         this._intervalId = setInterval(this.updateLocal, this._delay);
@@ -497,9 +497,9 @@ class Sprite {
         this._boundAction = Sprite.BOUND_ACTION.WRAP;
         this._bounds = new SpriteBoundary(this);
 
-        this._scene.addSprite(this);
-
         this._deleted = false;
+
+        this._scene.addSprite(this);
     }
 
     /* PROPERTIES */
