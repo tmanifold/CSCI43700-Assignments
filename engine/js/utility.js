@@ -3,43 +3,42 @@
     A utility class to handle angles.
     @class
 */
-class Angle {
 
-    /** @private */
-    #degrees;
-    #radians;
+class Angle {
 
     /** @static {number} TWOPI - Pi multipled by 2 */
     static TWOPI = Math.PI * 2;
 
     constructor() {
-        this.#degrees = 0;
-        this.#radians = 0;
+        this._degrees = 0;
+        this._radians = 0;
     }
 
     /** @prop {number} degrees */
     set deg(d) { this.setDegrees(d); }
-    get deg() { return this.#degrees; }
+    get deg() { return this._degrees; }
 
     setDegrees(deg) {
 
         if (deg > 360) deg -= 360;
 
-        this.#degrees = deg;
-        this.#radians = Angle.toRadians(deg);
+        this._degrees = deg;
+        this._radians = Angle.toRadians(deg);
     }
 
     /** @prop {number} radians */
     set rad(r) { this.setRadians(r); }
-    get rad() { return this.#radians; }
+    get rad() { return this._radians; }
 
     setRadians(rad) {
 
         if (rad > Angle.TWOPI) rad -= Angle.TWOPI;
 
-        this.#radians = rad;
-        this.#degrees = Angle.toDegrees(rad);
+        this._radians = rad;
+        this._degrees = Angle.toDegrees(rad);
     }
+
+    /* STATIC METHODS */
 
     /**
         @param {number} degrees
@@ -53,7 +52,7 @@ class Angle {
         @static
     */
     static toDegrees(radians) { return radians * 180 / Math.PI; }
-}
+} // end Angle
 
 /**
     Represents a debug console in the page. Appends the console as a child of the specified
@@ -98,7 +97,7 @@ class DebugConsole {
 
         if (this._bWriteToSystemConsole) { console.log(...args); }
     }
-}
+} // end DebugConsole
 
 /**
     Constructs a Vector2.
@@ -111,23 +110,94 @@ class Vector2 {
 
     /**
         @constructs Vector2
-        @param {number} a - the component corresponding to x-value
-        @param {number} b - the component corresponding to y-value
-        @param {boolean} isPolar - if the coordinates are polar.
+        @param {number} a - Corresponds to the x-component if isPolar=false. Otherwise corresponds to polar coordinate r.
+        @param {number} b - Corresponds to the y-component if isPolar=false. Otherwise corresponds to polar coordinate angle theta.
+        @param {boolean} isPolar - if the vector is expressed in polar coordinates. regardless of this flag's value, cartesian and polar coordinates will be calculated and stored. This flag is only for initialization.
     */
     constructor(a=0, b=0, isPolar = false) {
-        /** @prop {number} */
-        this.x = a;
-        /** @prop {number} */
-        this.y = b;
+
+        if (isPolar === true) {
+            this._r = a;
+            this._angle = b;
+
+            this._recalcFromPolar();
+
+            // this._x = r * Math.cos(this.theta);
+            // this._y = r * Math.sin(this.theta);
+        } else {
+            this._x = a;
+            this._y = b;
+
+            this._recalcFromCart();
+            // this._r = Math.hypot(x, y);
+            // this._angle = Math.atan2(y, x);
+        }
+    }
+
+    /* BEGIN ATTRIBUTES */
+
+    /** @prop {number} x - x-coordinate */
+    get x() { return this._x; }
+    set x(val) {
+        this._x = val;
+        this._recalcFromCart();
+    }
+
+    /** @prop {number} y - y-coordinate */
+    get y() { return this._y; }
+    set y(val) {
+        this._y = val;
+        this._recalcFromCart();
+    }
+
+    /** @prop {number} r - The vector length */
+    get r() { return this._r; }
+    set r(val) {
+        this._r = r;
+        this._recalcFromPolar();
+    }
+
+    /** @prop {number} mag - The magnitude (length) of the vector */
+    get mag() { return this._r; }
+    set mag(val) { this.r = val; }
+
+    /** @prop {number} angle - Vector angle in radians */
+    get angle() { return this._angle; }
+    set angle(a) { this.setAngle(a); }
+
+    /**
+        Set the vector angle. Recalculate x and y based on the given angle.
+        @param {number} theta - the angle in radians
+    */
+    setAngle(theta) {
+        (theta > Angle.TWOPI) ? this._angle = theta - Angle.TWOPI : this._angle = theta;
+        this._recalcFromPolar();
+        return this;
     }
 
     /**
-        Checks if this vector's components are equal to another.
-        @param {Vector2}
-        @return {boolean}
+        Rotate this vector by the given amount.
+        @param {number} rad - number of radians to rotate.
     */
-    equals(vec) { return (this.x == vec.x) && (this.y == vec.y); }
+    rotate(rad) {
+        this.setAngle(this.angle + rad);
+        return this;
+    }
+
+    /** Convenience function to recalculate x and y values based on change in r or angle */
+    _recalcFromPolar() {
+        this._x = this._r * Math.cos(this._angle);
+        this._y = this._r * Math.sin(this._angle);
+    }
+    /** Convenience function to recalculate r and angle values based on a change in x or y */
+    _recalcFromCart() {
+        this._r = Math.hypot(this._x, this._y);
+        this._angle = Math.atan2(this._y, this._x);
+    }
+
+    /* END ATTRIBUTES */
+
+    /* VECTOR OPERATIONS */
 
     /**
         Adds the components of another vector to this vector.
@@ -138,12 +208,10 @@ class Vector2 {
     addWith(v) {
         try {
             Vector2.validate(v);
-            // component add
             this.x += v.x;
             this.y += v.y;
 
             return this;
-
         } catch (e) {
             console.log(e);
             return null;
@@ -180,68 +248,9 @@ class Vector2 {
     }
 
     /**
-        @prop {number} angle - Vector angle to x-axis in radians
-    */
-    get angle() { return Math.atan2(this.y, this.x); }
-    set angle(a) { this.setAngle(a); }
-
-    /**
-        Set the vector angle. Recalculate x and y based on the given angle.
-        @param {number} theta - the angle in radians
-    */
-    setAngle(theta) {
-        if (theta > 2 * Math.PI) theta = theta - 2 * Math.PI;
-
-        this.x = this.norm * Math.cos(theta);
-        this.y = this.norm * Math.sin(theta);
-    }
-
-    /**
-        Rotate this vector by the given amount.
-        @param {number} amt - number of radians to rotate.
-    */
-    rotate(amt) { this.setAngle(this.angle + amt); }
-
-    /**
-        @prop {number} magnitude - The length of the vector
-    */
-    get magnitude() { return Math.hypot(this.x, this.y); }
-    set magnitude(m) { this.setMagnitude(m); }
-
-    /**
-        Set the vector magnitude. Recalculate x and y based on the given value.
-        @param {number} r - the new magnitude.
-    */
-    setMagnitude(r) {
-        let vx = r * Math.cos(this.angle);
-        let vy = r * Math.sin(this.angle);
-        this.x = vx;
-        this.y = vy;
-    }
-
-    /**
-        @prop {number} norm - The length of the vector
-    */
-    get norm() { return this.magnitude; }
-    set norm(r) { this.magnitude = this.setNorm(r); }
-    /**
-        Set the vector normal. same as setMagnitude()
-        @param {number} r - the new magnitude
-    */
-    setNorm(r) { this.magnitude = r; }
-
-    /**
-        Get this vector in polar coordinates.
-        @return {Vector2} Vector consisting of <r, theta>.
-    */
-    toPolar() {
-        return new Vector2(this.norm, this.angle, true);
-    }
-
-    /**
         @prop {Vector2} unit - A unit vector representation of this Vector2
     */
-    get unit() { return new Vector2(this.x / this.norm, this.y / this.norm); }
+    get unit() { return new Vector2(this.x / this.mag, this.y / this.mag); }
 
     /**
         Add the components of the specified vectors
@@ -300,9 +309,7 @@ class Vector2 {
         @return {Vector2}
         @static
     */
-    static fromPolar(r, theta) {
-        return new Vector2(r * Math.cos(theta), r * Math.sin(theta), true);
-    }
+    static fromPolar(r, theta) { return new Vector2(r, theta, true); }
 
     /**
         Calculates the linear interpolation between two Vector2 objects
