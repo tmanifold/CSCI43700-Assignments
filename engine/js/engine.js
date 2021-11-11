@@ -221,7 +221,39 @@ class ScheduledTask {
         this._isPaused = true;
     }
 
-} // end Timer
+} // end ScheduledTask
+
+class Time {
+    static {
+        this.time = Date.now();
+    }
+}
+
+/* This weird IIFE design pattern is why drunk me shouldn't be allowed to code.
+    I should really rewrite this as a class, and I probably will, but for now I'm
+    leaving it because it's gross and stupid which is funny.
+
+    https://developer.mozilla.org/en-US/docs/Glossary/IIFE
+    https://www.sitepoint.com/javascript-design-patterns-singleton/
+*/
+
+// Here is a stupidly simply timer instead. lets hope it works
+// init a time literal thing for testing idfk
+// should this be declared as const? hell if i know
+// what the actual fuck is this though
+const Timer = ( // weird ass closure immediately executed shit idfk know man its javascript
+    () => { // anon func because fuck you
+        let last  = Date.now();
+        let dt = 0;
+        return {
+            delta: () => { return dt; },
+            update: () => {
+                dt = Date.now() - last;
+                last = Date.now();
+            }
+        };
+    }
+)(); // immediately exec this shit idfk js is crazy.
 
 /**
     Constructs a Scene.
@@ -474,7 +506,7 @@ class Sprite {
         this._canvas = scene._canvas;
         this._ctx = this._canvas.getContext('2d');
 
-        this._image = new Image();
+        this._image = new Image(width, height);
         this._image.src = img;
         this._width = width;
         this._height = height;
@@ -848,7 +880,7 @@ class Sprite {
         let xx = -(this._width / 2);
         let yy = -(this._height / 2);
 
-        this._ctx.drawImage(this._image, xx, yy, this._width, this._heigh);
+        this._ctx.drawImage(this._image, xx, yy, this._width, this._height);
         //this._ctx.drawImage(this._image, this.x, this.y, this._width, this._height);
 
         if (g_DEBUG_MODE == DEBUG.ON) this.drawDebugInfo(xx, yy);
@@ -867,14 +899,14 @@ class Sprite {
         this._ctx.fillStyle = "grey";
         this._ctx.beginPath();
         //this._ctx.arc(this.center.x, this.center.y, 2, 0, 2 * Math.PI)
-        this._ctx.arc(0, 0, 2, 0, 2 * Math.PI);
+        this._ctx.arc(0, 0, 2, 0, Angle.TWOPI);
         this._ctx.fill();
 
         // draw image angle
         this._ctx.strokeStyle = "blue";
         this._ctx.beginPath();
         this._ctx.moveTo(0, 0);
-        this._ctx.lineTo(this._width, 0);
+        this._ctx.lineTo(this._bounds._offsetRight, 0);
         this._ctx.stroke();
 
         // draw velocity
@@ -889,7 +921,8 @@ class Sprite {
 
     /* END RENDERING */
 
-    /** update sprite state. call each frame */
+    /** Default method to update sprite state. call each frame.
+        Can be overridden for custom behavior */
     update() {
         this.addForce(this._accel);
         this.translate(this._velocity.x, this._velocity.y);
