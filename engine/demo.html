@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>Game Engine Demo</title>
+
+        <script type="text/javascript" src="./js/engine.js"></script>
+        <script type="text/javascript" src="./js/utility.js"></script>
+
+        <script type="text/javascript">
+
+
+            // Game initialization
+            function init() {
+
+                setDebugMode(DEBUG.ON);
+
+                // stop arrow default behavior https://stackoverflow.com/a/8916697
+                window.addEventListener("keydown", function(e) {
+                    if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+                        e.preventDefault();
+                    }
+                }, false);
+
+                scene = new Scene('demo');
+                mouse = scene.mouse;
+                scene.setBorder('1px solid gray');
+                mouse.setStyle('url(img/cursor.png), auto');
+
+                burg = new Sprite('img/burger.png', scene, 50, 50, scene.width / 2, scene.height / 2);
+                //burg.addForce(new Vector2(5,0));
+
+
+                debugConsole = document.createElement("div");
+                document.body.appendChild(debugConsole);
+
+                scene.start();
+
+                obj = {
+                    x: 1,
+                    get_x: function() { console.log('the value of x is ', this.x); },
+                    get_y: function(y) { console.log('the value of y is ', y); }
+                };
+
+                u = Time.schedule(obj.get_x(), 3000);
+                //v = Time.repeat(() => {console.log('im repeating')}, 500));
+            }
+
+            // Main game loop
+            function update() {
+                //Timer.update();
+                Time.update();
+                scene.clear();
+
+                burgerlyAccurateAngles   = burg.angleTo(mouse.pos);
+                burgerlyAccurateDistance = burg.distanceTo(mouse.pos);
+
+                burg.setAngle(burgerlyAccurateAngles);
+                burg.pos = Vector2.lerp(burg.pos, mouse.pos, Time.delta / 1000);
+
+                for (const sprite of scene.sprites) {
+                    sprite.update();
+                }
+
+                scene.mouse.update();
+                //console.log(Timer.delta());
+
+                //debugConsole.innerHTML = "Time.delta: " + Time.delta;
+            }
+
+        </script>
+    </head>
+
+    <body onload="init()">
+        <div id="demo" style="padding:10px;"></div>
+    </body>
+
+</html>

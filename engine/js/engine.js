@@ -161,7 +161,18 @@ class Time {
         this.delta = Date.now() - this.time;
         this.time = Date.now();
     }
-}
+
+    static schedule(fn, delay, ...args) {
+        return setTimeout(fn, delay, ...args);
+    }
+
+    static repeat(fn, delay, ...args) {
+        return setInterval(() => {fn}, delay, ...args);
+    }
+
+    static cancel(id) { clearTimeout(id); }
+
+} // end Time
 
 /* This weird IIFE design pattern is why drunk me shouldn't be allowed to code.
     I should really rewrite this as a class, and I probably will, but for now I'm
