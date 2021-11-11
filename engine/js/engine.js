@@ -148,83 +148,17 @@ class Keyboard {
     resetKeyState(e) { this._keyState[e.key] = false; }
 } // end Keyboard
 
-
-class Stopwatch {
-    constructor() { this._elapsed = 0; }
-
-    start() { this._start = Date.now(); }
-
-    stop() { this._elapsed += Date.now() - this._start; }
-
-    clear() { this._elapsed = 0; }
-
-    get time() { return this._elapsed; }
-}
-
 /**
-    Executes the specified callback after the delay in ms.
+    Manages timekeeping.
     @class
 */
-class ScheduledTask {
-    /**
-        Constructs a Timer.
-        @param {function} callback
-        @param {number} delay - how long to wait in ms before executing callback
-    */
-    constructor(callback, delay) {
-        /** @callback _callback - callback function */
-        this._callback = callback;
-        /** @prop {boolean} _isPaused - Flag indicating if the timer is paused. */
-        this._isPaused = false;
-        /** @prop {number} _delay - how long to wait in ms */
-        this._delay = delay;
-    }
-
-    // TODO: Make this work properly
-
-    /**
-        @prop {number} time - the remaining time
-    */
-    get time() {
-        if (!this._isPaused) {
-            let t = this._endTime - Date.now();
-            return (t > 0) ? t : 0;
-        } else {
-            return this._delay;
-        }
-    }
-
-    /**
-        Start the timer
-    */
-    start() {
-        if (this._isPaused) this._isPaused = false;
-
-        this._startTime = Date.now();
-        this._endTime = this._startTime + this._delay;
-        this._id = setTimeout(this._callback, this._delay);
-    }
-
-    /**
-        Stop the timer and cancel scheduled callback
-    */
-    stop() {
-        clearTimeout(this._id);
-    }
-
-    /**
-        Pause the Timer, maintaining remaining time.
-    */
-    pause() {
-        this.stop();
-        this._delay -= this._endTime - Date.now();
-        this._isPaused = true;
-    }
-
-} // end ScheduledTask
-
 class Time {
-    static {
+
+    static time = Date.now();
+    static delta = 0;
+
+    static update() {
+        this.delta = Date.now() - this.time;
         this.time = Date.now();
     }
 }
@@ -235,7 +169,7 @@ class Time {
 
     https://developer.mozilla.org/en-US/docs/Glossary/IIFE
     https://www.sitepoint.com/javascript-design-patterns-singleton/
-*/
+
 
 // Here is a stupidly simply timer instead. lets hope it works
 // init a time literal thing for testing idfk
@@ -254,6 +188,8 @@ const Timer = ( // weird ass closure immediately executed shit idfk know man its
         };
     }
 )(); // immediately exec this shit idfk js is crazy.
+
+*/
 
 /**
     Constructs a Scene.
