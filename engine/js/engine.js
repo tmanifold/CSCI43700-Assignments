@@ -123,6 +123,7 @@ class Mouse {
 class Keyboard {
     constructor(scene) {
         this._keyState = {};
+        this._keyBindings = {};
         this._scene = scene;
         document.onkeydown = this.updateKeyState.bind(this);
         document.onkeyup = this.resetKeyState.bind(this);
@@ -139,16 +140,38 @@ class Keyboard {
         @param {KeyboardEvent} e - Triggering keydown event
         @listens {KeyboardEvent}
     */
-    updateKeyState(e) { this._keyState[e.key] = true; }
+    updateKeyState(e) { this._keyState[e.code] = true; }
     /**
         Event handler to reset a key to unpressed
         @param {KeyboardEvent} e - Triggering keyup event
         @listens {KeyboardEvent}
     */
-    resetKeyState(e) { this._keyState[e.key] = false; }
+    resetKeyState(e) { this._keyState[e.code] = false; }
+
+    /**
+        @prop {Object} bindings - structure of key,value pairs mapping keyboard keys to functions
+        @example myKeyboard.bindings = {'KeyA': doSomething(), 'Space': jump() };
+        @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values
+    */
+    get bindings() { return this._keyBindings; }
+    set bindings(b) { this._keyBindings = b; }
+
+    /**
+        set the action to be performed when a key is pressed
+        @param {string} key - the keycode
+        @param {function} action - the function to call
+        @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values
+    */
+    bindKey(key, action) { this._keyBindings[key] = action; }
+
+    /** Check the current key state and, if applicable, trigger it's corresponding action */
+    processKeys() {
+        for (const [key, pressed] of Object.entries(this._keyState)) {
+            if (this._keyBindings[key] && pressed) this._keyBindings[key]();
+        }
+    }
+
 } // end Keyboard
-
-
 
 /**
     Manages timekeeping.
@@ -191,43 +214,15 @@ class Time {
 
 } // end Time
 
-/* This weird IIFE design pattern is why drunk me shouldn't be allowed to code.
-    I should really rewrite this as a class, and I probably will, but for now I'm
-    leaving it because it's gross and stupid which is funny.
-
-    https://developer.mozilla.org/en-US/docs/Glossary/IIFE
-    https://www.sitepoint.com/javascript-design-patterns-singleton/
+/**
+    Manages game components such as scenes and user input
+    @class
 */
-
-// Here is a stupidly simply timer instead. lets hope it works
-// init a time literal thing for testing idfk
-// should this be declared as const? hell if i know
-// what the actual fuck is this though
-// const Time = ( // weird ass closure immediately executed shit idfk know man its javascript
-//     () => { // anon func because fuck you
-//         let last  = Date.now();
-//         let dt = 0;
-//         return {
-//             delta: () => { return dt; },
-//             update: () => {
-//                 dt = Date.now() - last;
-//                 last = Date.now();
-//             },
-//             schedule: (fn, delay, ...args) => {
-//
-//             },
-//             repeat: (fn, delay, ...args) => {
-//
-//             },
-//             cancel: (fn, delay, ...args) => {
-//
-//             },
-//         };
-//     }
-// )(); // immediately exec this shit idfk js is crazy.
-
-class GameManager {
-
+class Game {
+    constructor() {
+        this._keyboard = new Keyboard();
+        this._mouse = new Mouse();
+    }
 }
 
 /**
