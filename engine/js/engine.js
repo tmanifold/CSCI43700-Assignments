@@ -215,15 +215,37 @@ class Time {
 } // end Time
 
 /**
-    Manages game components such as scenes and user input
+    Manages game components and game logic.
     @class
 */
 class Game {
     constructor() {
+
+        this.init();
+    }
+
+    init() {
         this._keyboard = new Keyboard();
         this._mouse = new Mouse();
+        this._scenes = [];
     }
-}
+
+    start() {
+
+    }
+
+    pause() {
+
+    }
+
+    stop() {
+
+    }
+
+    update() {
+
+    }
+} // end Game
 
 /**
     Constructs a Scene.

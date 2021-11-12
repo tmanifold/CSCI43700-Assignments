@@ -13,14 +13,9 @@
     - Game or GameManager
         - abstract out many functions currently handled by Scene
 
-
-### Stopwatch
-- make work in real time
-- maybe consolidate as subclass of timer
-
-### ~~Timer~~ ScheduledTask
+### Time
 - make pausing work
-- add deltaTime
+- ~~add deltaTime~~
 
 ### Scene
 - performance optimizations

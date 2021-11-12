@@ -14,10 +14,10 @@
             // Game initialization
             function init() {
 
-                setDebugMode(DEBUG.ON);
+                //setDebugMode(DEBUG.ON);
 
                 // stop arrow default behavior https://stackoverflow.com/a/8916697
-                window.addEventListener("keydown", function(e) {
+                document.addEventListener("keydown", function(e) {
                     if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
                         e.preventDefault();
                     }
@@ -37,11 +37,11 @@
 
                 scene.start();
 
-                obj = {
-                    x: 1,
-                    get_x: function() { console.log(this, 'the value of x is ', this.x); },
-                    get_y: function(y) { console.log(this, 'the value of y is ', y); }
-                };
+                // obj = {
+                //     x: 1,
+                //     get_x: function() { console.log(this, 'the value of x is ', this.x); },
+                //     get_y: function(y) { console.log(this, 'the value of y is ', y); }
+                // };
 
                 //u = Time.schedule(() => { obj.get_x() }, 500);
                 //v = Time.repeat(() => { obj.get_y('repeat') }, 1000);
@@ -49,8 +49,7 @@
 
             // Main game loop
             function update() {
-                //Timer.update();
-                Time.update();
+
                 scene.clear();
 
                 burgerlyAccurateAngles   = burg.angleTo(mouse.pos);
