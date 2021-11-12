@@ -173,9 +173,7 @@ class Time {
         @return {number} id of the task. can be used with Time.cancel() to cancel execution
         @static
     */
-    static schedule(fn, delay, ...args) {
-        return setTimeout(fn, delay, ...args);
-    }
+    static schedule(fn, delay, ...args) { return setTimeout(fn, delay, ...args); }
 
     /**
         Schedule a task to run repeatedly. Refer to {@link https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#the_this_problem}
@@ -186,16 +184,10 @@ class Time {
         @return {number} id of the task. can be used with Time.cancel() to cancel execution
         @static
     */
-    static repeat(fn, delay, ...args) {
-        return setInterval(fn, delay, ...args);
-    }
+    static repeat(fn, delay, ...args) { return setInterval(fn, delay, ...args); }
 
     /** Unschedule the task from running. This will not interrupt already running tasks. */
     static cancel(id) { clearTimeout(id); }
-
-    static async wait(ms) {
-        
-    }
 
 } // end Time
 
@@ -233,6 +225,10 @@ class Time {
 //         };
 //     }
 // )(); // immediately exec this shit idfk js is crazy.
+
+class GameManager {
+
+}
 
 /**
     Constructs a Scene.
@@ -416,6 +412,7 @@ class Scene {
 
     /** Run once per frame. Calls a user defined update() function. */
     updateLocal() {
+        Time.update();
         update();
     }
 } // end Scene
@@ -838,11 +835,18 @@ class Sprite {
     /* RENDERING */
 
     /**
-        Pre-render sprite offscreen.
-        @return {canvas} a canvas element containing the prerendered sprite.
+        Pre-render images offscreen.
+        @return {canvas} a canvas element containing the pre-rendered image.
     */
-    prerender() {
+    prerender(width = this._width, height = this._height, renderFunction) {
+        let offscreen = document.createElement('canvas');
+        offscreen.width = width;
+        offscreen.height = height;
 
+        let offscreenCtx = offscreen.getContext('2d');
+        renderFunction(offscreenCtx);
+
+        return offscreen;
     }
 
     /**
