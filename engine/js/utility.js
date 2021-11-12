@@ -247,9 +247,7 @@ class Vector2 {
         }
     }
 
-    /**
-        @prop {Vector2} unit - A unit vector representation of this Vector2
-    */
+    /** @prop {Vector2} unit - A unit vector representation of this Vector2 */
     get unit() { return new Vector2(this.x / this.mag, this.y / this.mag); }
 
     /**

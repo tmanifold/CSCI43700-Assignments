@@ -148,6 +148,8 @@ class Keyboard {
     resetKeyState(e) { this._keyState[e.key] = false; }
 } // end Keyboard
 
+
+
 /**
     Manages timekeeping.
     @class
@@ -162,15 +164,38 @@ class Time {
         this.time = Date.now();
     }
 
+    /**
+        Schedule a task to run after a delay. Refer to {@link https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#the_this_problem}
+            to ensure proper binding of 'this'
+        @param {function} fn - the function to run
+        @param {number} delay - how long to wait in milliseconds
+        @paran {...*=} args - additional arguments to pass to fn
+        @return {number} id of the task. can be used with Time.cancel() to cancel execution
+        @static
+    */
     static schedule(fn, delay, ...args) {
         return setTimeout(fn, delay, ...args);
     }
 
+    /**
+        Schedule a task to run repeatedly. Refer to {@link https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#the_this_problem}
+            to ensure proper binding of 'this'
+        @param {function} fn - the function to run
+        @param {number} delay - how long to wait between executions in milliseconds
+        @paran {...*=} args - additional arguments to pass to fn
+        @return {number} id of the task. can be used with Time.cancel() to cancel execution
+        @static
+    */
     static repeat(fn, delay, ...args) {
-        return setInterval(() => {fn}, delay, ...args);
+        return setInterval(fn, delay, ...args);
     }
 
+    /** Unschedule the task from running. This will not interrupt already running tasks. */
     static cancel(id) { clearTimeout(id); }
+
+    static async wait(ms) {
+        
+    }
 
 } // end Time
 
@@ -180,27 +205,34 @@ class Time {
 
     https://developer.mozilla.org/en-US/docs/Glossary/IIFE
     https://www.sitepoint.com/javascript-design-patterns-singleton/
-
+*/
 
 // Here is a stupidly simply timer instead. lets hope it works
 // init a time literal thing for testing idfk
 // should this be declared as const? hell if i know
 // what the actual fuck is this though
-const Timer = ( // weird ass closure immediately executed shit idfk know man its javascript
-    () => { // anon func because fuck you
-        let last  = Date.now();
-        let dt = 0;
-        return {
-            delta: () => { return dt; },
-            update: () => {
-                dt = Date.now() - last;
-                last = Date.now();
-            }
-        };
-    }
-)(); // immediately exec this shit idfk js is crazy.
-
-*/
+// const Time = ( // weird ass closure immediately executed shit idfk know man its javascript
+//     () => { // anon func because fuck you
+//         let last  = Date.now();
+//         let dt = 0;
+//         return {
+//             delta: () => { return dt; },
+//             update: () => {
+//                 dt = Date.now() - last;
+//                 last = Date.now();
+//             },
+//             schedule: (fn, delay, ...args) => {
+//
+//             },
+//             repeat: (fn, delay, ...args) => {
+//
+//             },
+//             cancel: (fn, delay, ...args) => {
+//
+//             },
+//         };
+//     }
+// )(); // immediately exec this shit idfk js is crazy.
 
 /**
     Constructs a Scene.

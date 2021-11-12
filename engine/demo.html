@@ -39,12 +39,12 @@
 
                 obj = {
                     x: 1,
-                    get_x: function() { console.log('the value of x is ', this.x); },
-                    get_y: function(y) { console.log('the value of y is ', y); }
+                    get_x: function() { console.log(this, 'the value of x is ', this.x); },
+                    get_y: function(y) { console.log(this, 'the value of y is ', y); }
                 };
 
-                u = Time.schedule(obj.get_x(), 3000);
-                //v = Time.repeat(() => {console.log('im repeating')}, 500));
+                //u = Time.schedule(() => { obj.get_x() }, 500);
+                //v = Time.repeat(() => { obj.get_y('repeat') }, 1000);
             }
 
             // Main game loop
