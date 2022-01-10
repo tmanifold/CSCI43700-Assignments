@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: math/vector2.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: math/vector2.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+/** @module vector2 */
+
+import { Point } from './coordinate.js'
+import { Angle } from './angle.js';
+
+/**
+    Constructs a Vector2.
+    A vector2 is a 2-dimensional vector.
+    @class
+*/
+class Vector2 extends Point {
+
+    /**
+        @constructs Vector2
+        @param {number} a - Corresponds to the x-component if isPolar=false. Otherwise corresponds to polar coordinate r.
+        @param {number} b - Corresponds to the y-component if isPolar=false. Otherwise corresponds to polar coordinate angle theta.
+        @param {boolean} isPolar - if the vector is expressed in polar coordinates. regardless of this flag's value, cartesian and polar coordinates will be calculated and stored. This flag is only for initialization.
+    */
+    constructor(a=0, b=0, isPolar = false) {
+
+        super(a,b);
+        // this._tail = 0;
+
+        if (isPolar === true) {
+            this._r = a;
+            this._angle = b;
+
+            this._recalcFromPolar();
+
+            // this._x = r * Math.cos(this.theta);
+            // this._y = r * Math.sin(this.theta);
+        } else {
+            this._x = a;
+            this._y = b;
+
+            this._recalcFromCart();
+            // this._r = Math.hypot(x, y);
+            // this._angle = Math.atan2(y, x);
+        }
+    }
+
+    /* BEGIN ATTRIBUTES */
+
+    /** @prop {number} x - x-coordinate */
+    get x() { return this._x; }
+    set x(val) {
+        this._x = val;
+        this._recalcFromCart();
+    }
+
+    /** @prop {number} y - y-coordinate */
+    get y() { return this._y; }
+    set y(val) {
+        this._y = val;
+        this._recalcFromCart();
+    }
+
+    /** set coordinates as cartesian or polar
+        @param {number} - x or r
+        @param {number} - y or theta. if polar, theta is in radians
+        @param {boolean=} - polar coordinates or not
+    */
+    setCoords(a, b, isPolar = false) {
+        (isPolar)
+            ? this.setPolar(a, b)
+            : this.setCartesian(a, b);
+    }
+
+    /**
+        set cartesian coordinates
+        @param {number}
+        @param {number}
+    */
+    setCartesian(x, y) {
+        this._x = x;
+        this._y = y;
+
+        this._recalcFromCart();
+    }
+
+    /**
+    set polar coordinates
+    @param {number}
+    @param {number}
+    */
+    setPolar(r, theta) {
+        this._r = r;
+        this.angle = theta;
+
+        this._recalcFromPolar();
+    }
+
+    /** @prop {number} r - The vector length */
+    get r() { return this._r; }
+    set r(val) {
+        this._r = r;
+        this._recalcFromPolar();
+    }
+
+    /** @prop {number} mag - The magnitude (length) of the vector */
+    get mag() { return this._r; }
+    set mag(val) { this.r = val; }
+
+    /** @prop {number} angle - Vector angle in radians */
+    get angle() { return this._angle; }
+    set angle(a) { this.setAngle(a); }
+
+    /**
+        Set the vector angle. Recalculate x and y based on the given angle.
+        @param {number} theta - the angle in radians
+    */
+    setAngle(theta) {
+        (theta > Angle.TWOPI) ? this._angle = theta - Angle.TWOPI : this._angle = theta;
+        this._recalcFromPolar();
+        return this;
+    }
+
+    /**
+        Rotate this vector by the given amount.
+        @param {number} rad - number of radians to rotate.
+    */
+    rotate(rad) {
+        this.setAngle(this.angle + rad);
+        return this;
+    }
+
+    /**
+        Rotate around a given point
+        @param {Vector2} focus
+    */
+    rotateAround(focus, amt = Angle.toRadians(1), dist = this.distanceTo(focus)) {
+
+        this.setCartesian(focus.x + (dist * Math.cos(amt)), focus.y + (dist * Math.sin(amt)));
+    }
+
+    /**
+        Get angle to the specified vector
+        @param {Vector2} vec
+        @return {Angle} angle to the specified vector
+    */
+    angleTo(vec) { return Math.atan2(this.y - vec.y, this.x - vec.x); }
+
+    /**
+        Get distance to the specified vector
+        @param {Vector2} vec
+        @return {number} distance between vectors.
+    */
+    distanceTo(vec) { return Math.hypot(this.x - vec.x, this.y - vec.y); }
+
+    /** Convenience function to recalculate x and y values based on change in r or angle */
+    _recalcFromPolar() {
+        this._x = this._r * Math.cos(this._angle);
+        this._y = this._r * Math.sin(this._angle);
+    }
+    /** Convenience function to recalculate r and angle values based on a change in x or y */
+    _recalcFromCart() {
+        this._r = Math.hypot(this._x, this._y);
+        this._angle = Math.atan2(this._y, this._x);
+    }
+
+    /* END ATTRIBUTES */
+
+    /* VECTOR OPERATIONS */
+
+    /**
+        Adds the components of another vector to this vector.
+
+        @param {Vector2} v - The vector to add to this one.
+        @return {Vector2|null}
+    */
+    addWith(v) {
+        try {
+            Vector2.validate(v);
+            this.x += v.x;
+            this.y += v.y;
+
+            return this;
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    /**
+        Multiplies vector components by the given scalar.
+        @param {number} n - A scalar to be applied to the vector.
+        @return {Vector2} The scaled vector
+    */
+    scaleBy(n) {
+        this.x *= n;
+        this.y *= n;
+
+        return this;
+    }
+
+    /**
+        Compute the dot product of this vector and another vector.
+
+        @param {Vector2} v - The vector to dot with this one.
+        @return {number|null} The dot product or null if an error occurs.
+    */
+    dotWith(v) {
+        //Vector2.dotProduct(this, v);
+        try {
+            Vector2.validate(v);
+            return (this.x * v.x) + (this.y + v.y);
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    /**
+        Determine if this vector is equal to another vector
+        @param {Vector2} vec - the vector to compare against
+        @return {boolean}
+    */
+    equals(vec) {
+        try {
+            Vector2.validate(vec);
+            return (this.mag == vec.mag) &amp;&amp; (this.angle == vec.angle);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    /** @prop {Vector2} unit - A normalized representation of the vector */
+    get unit() { return new Vector2(1, this.angle, true); }
+    // get unit() { return new Vector2(this.x / this.mag, this.y / this.mag); }
+
+    /** @prop {Vector2} normal - a vector normal to this one */
+    get normal() { return new Vector2(-this.y, this.x); }
+
+    /**
+        Calculates the linear interpolation to the target vector
+        @param {Vector2} v_target
+        @param {number} t
+        @return {Vector2|null} Returns a Vector2 of the linear interpolation or null if an error occurs.
+    */
+    lerpTo(v_target, t) {
+        try {
+            Vector2.validate(v_target);
+            // Lerp is given by ((1 - t) * v0) + (t * v1);
+            //console.log(interp, v_target);
+            return this.scaleBy(1-t).addWith(Vector2.scale(v_target, t));
+            // return Vector2.add(Vector2.scale(this, 1 - t), (Vector2.scale(v_target, t)));
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    /**
+        Add the components of the specified vectors
+        @param {Vector2} v1
+        @param {Vector2} v2
+        @param {...Vector2} vx - additional vectors
+        @return {Vector2} the resulting vector sum
+    */
+    static add(v1, v2, ...vx) {
+        //Vector2.validate(v1, v2, ...vx);
+
+        let temp = new Vector2().addWith(v1).addWith(v2);
+
+        for (const v of vx) temp.addWith(v);
+
+        return temp;
+    }
+
+    /**
+        Find the difference between two vectors
+        @param {Vector2}
+        @param {Vector2}
+        @return {Vector2}
+    */
+    static diff(v1, v2) {
+        return new Vector2(v1.x - v2.x, v1.y - v2.y);
+    }
+
+    /**
+        Compute the dot product of the two given vectors
+
+        @param {Vector2} v1
+        @param {Vector2} v2
+        @return {number|null} The dot product or null if an error occurs.
+    */
+    static dotProduct(v1, v2) {
+        try {
+            Vector2.validate(v1, v2);
+            return (v1.x * v2.x) + (v1.y * v2.y);
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    /**
+        Scale the magnitude of the vector v by scalar m.
+        @param {Vector2} v - The Vector2 to be scaled.
+        @param {number} m - the scalar
+        @return {Vector2|null} Returns the scaled Vector2 or null if an exception occurs.
+    */
+    static scale(v, m) {
+        try {
+            Vector2.validate(v);
+            return new Vector2(v.x * m, v.y * m);
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    /**
+        Get a vector perpendicular to the provided vector
+        @param {Vector2} v
+        @return {Vector2} the normal vector
+        @tatic
+    */
+    static normalTo(v) {
+        try {
+            Vector2.validate(v);
+            return new Vector2(-v.y, v.x);
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    /**
+        Get a unit vector
+        @param {Vector2} v - the vector to normalize
+        @return {Vector2} Returns a vector of length 1 in the same direction as v
+    */
+    static normalize(v) {
+        try {
+            Vector2.validate(v);
+            return new Vector2(1, v.angle, true);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    /**
+        Get a vector2 from polar coordinates.
+        @param {number} r - radius
+        @param {number} theta - angle
+        @return {Vector2}
+        @static
+    */
+    static fromPolar(r, theta) { return new Vector2(r, theta, true); }
+
+    /**
+        Calculates the linear interpolation between two Vector2 objects
+        @param {Vector2} v0
+        @param {Vector2} v1
+        @param {number} t
+        @return {Vector2|null} Returns a Vector2 of the linear interpolation or null if an error occurs.
+        @static
+    */
+    static lerp(v0, v1, t) {
+        try {
+            Vector2.validate(v0, v1);
+            // Lerp is given by ((1 - t) * v0) + (t * v1);
+            //return v0.scaleBy(1 - t).addWith(v1.scaleBy(t));
+            return Vector2.add(Vector2.scale(v0, 1 - t), (Vector2.scale(v1, t)));
+
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    static transform(v, mat) {
+
+    }
+
+    /**
+        Validates that the given parameter is a Vector2
+
+        @param {...Vector2} vx - vectors to validate
+        @throws {TypeError} Throws TypeError if v is not a Vector2
+    */
+    static validate(...vx) {
+        for (const v of vx) {
+            if (!(v instanceof Vector2)) {
+                throw new TypeError(`${v} must be a Vector2.`);
+            }
+        }
+    }
+
+    static random(min_x, max_x, min_y, max_y) {
+        //let x = Math.floor()
+        return new Vector2();
+    }
+
+    /** @prop {Vector2} - zero vector */
+    static get ZERO() { return new Vector2(0,0); }
+
+    /**
+        @prop {Vector2} I_HAT - The vector &lt;1, 0>
+    */
+    static get I_HAT() {
+        return new Vector2(1, 0);
+    }
+
+    /**
+        @prop {Vector2} K_HAT - The vector &lt;0, 1>
+    */
+    static get K_HAT() {
+        return new Vector2(0, 1);
+    }
+}
+
+export { Vector2 };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-base.html">base</a></li><li><a href="module-collision.html">collision</a></li><li><a href="module-engine.html">engine</a></li><li><a href="module-entity.html">entity</a></li><li><a href="module-event.html">event</a></li><li><a href="module-game.html">game</a></li><li><a href="module-graphics.html">graphics</a></li><li><a href="module-input.html">input</a></li><li><a href="module-math.html">math</a></li><li><a href="module-scene.html">scene</a></li><li><a href="module-sprite.html">sprite</a></li><li><a href="module-utility.html">utility</a></li><li><a href="module-vector2.html">vector2</a></li></ul><h3>Classes</h3><ul><li><a href="Angle.html">Angle</a></li><li><a href="DebugConsole.html">DebugConsole</a></li><li><a href="module-base-Base.html">Base</a></li><li><a href="module-base-Time.html">Time</a></li><li><a href="module-collision-BoxCollider.html">BoxCollider</a></li><li><a href="module-collision-Collider.html">Collider</a></li><li><a href="module-collision-Edge.html">Edge</a></li><li><a href="module-entity-Entity.html">Entity</a></li><li><a href="module-game-Game.html">Game</a></li><li><a href="module-graphics-Graphics.html">Graphics</a></li><li><a href="module-input-Keyboard.html">Keyboard</a></li><li><a href="module-input-Mouse.html">Mouse</a></li><li><a href="module-scene-Scene.html">Scene</a></li><li><a href="module-sprite-Sprite.html">Sprite</a></li><li><a href="module-sprite-SpriteBoundary.html">SpriteBoundary</a></li><li><a href="module-vector2-Vector2.html">Vector2</a></li></ul><h3>Events</h3><ul><li><a href="Sprite.html#event:SpriteCreated">SpriteCreated</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Mon Dec 06 2021 23:51:29 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

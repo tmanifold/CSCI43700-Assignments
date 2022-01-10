@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: engine/collision.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: engine/collision.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+/** @module collision */
+
+import { Angle , Point, Vector2, Matrix } from '../math.js';
+import { Base } from './base.js';
+import * as Util from '../utility.js';
+
+const COLLISION_MODEL = {
+    AABB: 0,
+    CIRCLE: 1,
+    SAT: 2
+};
+
+//class CollisionMatrix extends Array {
+    // constructor() {
+    //     super();
+    // }
+//}
+
+// /**
+//     Represents a collision between objects
+//     Maybe actually make this a collision manager and handle phases and stuff
+// */
+// class Collision extends Base {
+//     /** @param {...Entity} obj - entities involved in the collision */
+//     constructor(...obj) {
+//         super();
+//         this._objects = [...obj];
+//     }
+//
+//     propagate() { this.emit('Collision', ...this._objects); }
+// }
+
+/**
+    Represents the edge of a Collider polygon given by two points.
+    @class
+ */
+class Edge {
+    /**
+        @param {Vector2} p1
+        @param {Vector2} p2
+    */
+    constructor(p1, p2) {
+        this._p1 = p1;
+        this._p2 = p2;
+    }
+
+    /** @prop {Array} pts - an ordered pair containing the start and end points of this edge*/
+    get pts() { return [this._p1, this._p2]; }
+
+    /** @prop {Edge} perp - and edge perpendicular to this one */
+    get perp() {
+        return new Edge(this._p1.normal, this._p2.normal);
+    }
+}
+
+/**
+    Represents a collider. Handles collision detection
+    @class
+*/
+class Collider extends Base {
+    /**
+        @param {Vector2} pos - centerpoint
+        @param {Array} vx - array of points representing the collider
+    */
+    constructor(pos, vx) {
+        super();
+        //console.log('Collider ...vx', ...vx);
+        this._pos = new Vector2(pos.x, pos.y);
+        this._vertices = this._makeVertsFromPairs(vx);
+        // this._vertices = vx.map(v => new Vector2(v[0], v[1]));
+        //console.log('collider verts', this._vertices);
+        this._edges = this._makeEdges(this._vertices);
+        this._enabled = true;
+
+        this._flags = {
+            enabled: true
+        };
+    }
+    // create point objects from array of arrays representing points
+    // ex. [ [1,1], [2,2], [4,5] ]
+    /**
+        Converts a set of points given by an array of ordered pairs to a set of Points
+        @param {Array}
+        @return {Array.&lt;Point>}
+        @private
+    */
+    _makePoints(points) {
+        return points.map( p => new Point(p[0], p[1]) );
+    }
+
+    /**
+        Converts a set of points given by an array of ordered pairs to an array of Vector2
+        @param {Array}
+        @return {Array.&lt;Vector2>}
+        @private
+    */
+    _makeVertsFromPairs(pairs) {
+        //console.log('pairs', pairs);
+        return pairs.map( p => new Vector2(p[0], p[1]) );
+    }
+
+    /**
+        Converts a set of points to Edges
+        @param {Array}
+        @return {Array.&lt;Edge>}
+        @private
+    */
+    _makeEdges(vx) {
+        return vx.map((item, i, arr) => {
+            if (arr[i + 1]) return new Edge(item, arr[i+1]);
+            else return new Edge(item, arr[0]);
+        });
+    }
+
+    /**
+        Calculates the normal vector of a given edge
+        @param {Edge}
+        @return {Vector2}
+        @private
+    */
+    _getEdgeNormal(edge) {
+
+        // console.log('edge', edge);
+
+        let edgeVec = Vector2.diff(edge._p2, edge._p1);
+        let normal = edgeVec.normal;
+
+        // console.log('normal',normal);
+        // console.log('edgeVec', edgeVec);
+        let dot =  Vector2.dotProduct(normal, edgeVec);
+        //console.log('dot', dot);
+        Util.assert(0 == dot, RangeError(`Error obtaining normal for edge. ${edge}`));
+
+        return normal;
+    }
+
+    _getEdgeNormalAngle(edge) {
+        let perp = edge.perp;
+        let x = perp.pts[1].x - perp.pts[0].x;
+        let y = perp.pts[1].y - perp.pts[0].y;
+        let angle = Math.abs(Math.atan2(y, x));
+        if (angle == Math.PI) angle = 0;
+        // axes.add(angle);
+        return angle;
+        // return new Vector2(1, angle);
+    }
+
+    /**
+        @prop {Object} flags
+    */
+    get flags() { return this._flags; }
+
+    /** @prop {boolean} */
+    get enabled() { return this.enabled(); }
+    /** @prop {boolean} */
+    get disabled() { return !this.enabled(); }
+
+    /** enable the collider */
+    enable() { this._flags.enabled = true; }
+    /** disable the collider */
+    disable() { this._flags.enabled = false; }
+
+    /** @prop {Array.&lt;Vector2>} */
+    get vertices() { return this._vertices; }
+    set vertices(v) { this._vertices = v; }
+    /** @prop {Array.&lt;Edge>} */
+    get edges() { return this._edges; }
+
+    /** @prop {Vector2} */
+    get pos(){ return this._pos; }
+
+    /**
+        Get the projection of this polyhedron onto the given axis
+        @private
+        @param {Vector2}
+        @return {Object} an object consiting of min and max values for this projection.
+    */
+    _projection(axis) {
+
+        axis = axis.unit;
+
+        let p_max = axis.dotWith(this.vertices[0]);
+        let p_min = p_max;
+
+        for (let i = 1; i &lt; this.vertices.length; i++) {
+
+            let p = axis.dotWith(this.vertices[i]);
+
+            if (p > p_max) {
+                p_max = p;
+            } else if (p &lt; p_min) {
+                p_min = p;
+            }
+        }
+
+        // console.log([p_min, p_max]);
+        return {min: p_min, max: p_max};
+    }
+
+    /**
+        Determine collision via Separating Axis Theorem
+        @param {Collider} other
+        @returns {boolean}
+    */
+    collidesWith(other) {
+        // do not compare against self
+        if (other !== this) {
+            // only check enabled colliders
+            if (this.flags.enabled &amp;&amp; other.flags.enabled) {
+                // if position is the same collision is implied
+                if (this._pos.x == other.pos.x
+                    &amp;&amp; this._pos.y == other.pos.y) {
+                        //console.log('same')
+                        return true;
+                }
+
+                // do Separating Axis Theorem
+                // http://programmerart.weebly.com/separating-axis-theorem.html#:~:text=%E2%80%8BThe%20Separating%20Axis%20Theorem,the%20Polyhedra%20are%20not%20colliding.
+                // 0. get edges of boudnding polygon X
+                // 1. create a Set of the vector normals for each edge
+
+                let my_axes = new Set(this.edges.map(this._getEdgeNormal));
+                let other_axes = new Set(other.edges.map(other._getEdgeNormal));
+                // let axis_angles = new Set(this.edges.map(e => this._getEdgeNormalAngle(e)));
+                // other.edges.map(e => axis_angles.add(this._getEdgeNormalAngle(e)));
+
+                //axes = [...axis_angles].map(a => new Vector2(1, a));
+                //console.log(my_axes, other_axes);
+
+                // 2. project all points from each polygon onto each axis
+                //     - vector dot product or trig?
+                //     - dot product may necessitate adding tail to vector?
+                //     - maybe just do math to translate vectors to local collider space
+                // 3. test for overlap along each axis
+
+                for (const axis in my_axes) {
+                    let p1 = this._projection(axis);
+                    let p2 = other._projection(axis);
+
+                    // check overlap conditions
+                    // if the following coniditon evaluates to true, it means
+                    // collision
+                    if (!(
+                           (p1.min &lt; p2.max &amp;&amp; p1.min > p2.min) ||
+                           (p2.min &lt; p1.max &amp;&amp; p2.min > p1.min))
+                       ) {
+                           return false;
+                        // do nothing.
+                        // rewrite this later for cleaner logic
+                    }
+
+                }
+                //onsole.log(proj1);
+
+                return true;
+            }
+        }
+    }
+
+    _draw(ctx) {
+        ctx.save();
+        ctx.beginPath();
+
+        ctx.moveTo(this.vertices[0].x, this.vertices[0].y);
+        //ctx.strokeRect(this.pos - 5, this.pos - 5, 10, 10);
+
+        for (let v = 1; v &lt; this.vertices.length; v++) {
+
+            //ctx.moveTo(v.x, v.y);
+            ctx.lineTo(this.vertices[v].x, this.vertices[v].y);
+        }
+        ctx.closePath();
+
+        ctx.stroke();
+        //ctx.closePath();
+
+        ctx.restore();
+    }
+
+    static _test(t_ctx) {
+        var t_col  = new Collider(new Vector2(100,100), [25,25], [50,25], [50,50], [25,50] );
+        var t_col2 = new Collider(new Vector2(125,125), [50,50], [75,50], [75,75], [50,75] );
+        Util.validateType(Collider, t_col);
+        Util.validateType(Collider, t_col2);
+
+        let colliders = [t_col, t_col2]
+
+        console.log(t_col, t_col2);
+        console.log('Collider instantiation: ok');
+
+        t_ctx.clearRect(0,0,t_ctx.width, t_ctx.height);
+        t_ctx.strokeStyle = 'blue';
+        Util.validateType(CanvasRenderingContext2D, t_ctx);
+
+        t_col.collidesWith(t_col2)
+        ? t_ctx.strokeStyle = 'red'
+        : t_ctx.strokeStyle = 'black';
+
+        if (t_col.collidesWith(t_col2)) console.log(`collision: ${t_col} -> ${t_col2}`);
+
+        for (const col of colliders) {
+            col._draw(t_ctx);
+        }
+
+
+        // t_col2.collidesWith(t_col);
+    }
+}
+
+/**
+    A rectangular collider
+*/
+class BoxCollider extends Collider {
+    // constructor(pos, width, height) {
+    constructor(entity) {
+
+        let vx0 = entity.pos.x - entity.halfWidth;
+        let vy0 = entity.pos.y - entity.halfWidth;
+
+        let top_left = [vx0, vy0];
+        let top_right = [vx0 + entity.width, vy0];
+        let bottom_left = [vx0, vy0 + entity.height];
+        let bottom_right = [vx0 + entity.width, vy0 + entity.height];
+
+        let v = [top_left, top_right, bottom_right, bottom_left];
+        //console.log('BoxCollider', v);
+
+        super(entity.pos, v);
+
+        //console.log('boxcol ent rad',entity.heading.rad);
+        this._angle = entity.heading.rad;
+
+        // this.update(pos, width, height);
+        //this.update(entity);
+    }
+
+    /** @prop {number} heading in radians */
+    get heading() { return this._heading; }
+
+    /**
+        Update coordinates based on position of the given entity
+        @prop {Entity}
+    */
+    update(entity) {
+    // update(pos, angle, width, height) {
+
+        //console.log('verst', this._vertices);
+        // this._vertices.forEach((item, i) => {
+        //     item.rotateAround(this._pos, entity.heading.rad - this._angle, Math.hypot(entity.x - item.x, entity.y - item.y));
+        //     console.log(item);
+        // });
+
+        let diff_heading = entity.heading.rad - this._angle;
+
+        // this._vertices.forEach((vertex, i) => {
+        //     vertex.rotateAround(entity.pos, this._angle - entity.heading.rad, vertex.distanceTo(this._pos));
+        // });
+
+        this._pos.x = entity.pos.x;
+        this._pos.y = entity.pos.y;
+        this._angle = entity.heading.rad;
+
+        this._edges = this._makeEdges(this._vertices);
+    }
+}
+
+class CircleCollider extends Collider {
+    constructor(pos, r) {
+        super(pos);
+    }
+
+    collidesWith(entity) {
+
+    }
+}
+
+class SurfaceCollider extends Collider {
+    constructor(pos = new Vector2(), pts = []) {
+        // pts for surface collider do not need to result in a closed surface.
+        // they can just be a collection of points forming a series of lines
+    }
+}
+
+// (function () {
+//     'use strict';
+//
+//     let t_ctx = document.getElementById('collidertest').getContext('2d');
+//
+//     Util.benchmark(Collider._test, Collider, t_ctx).then((res) => {
+//         console.log(res);
+//     }).catch((e) => {
+//         console.log(e);}
+//     );
+// })();
+
+export {
+    //Collision,
+    Collider,
+    BoxCollider,
+    CircleCollider,
+    SurfaceCollider,
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-base.html">base</a></li><li><a href="module-collision.html">collision</a></li><li><a href="module-engine.html">engine</a></li><li><a href="module-entity.html">entity</a></li><li><a href="module-event.html">event</a></li><li><a href="module-game.html">game</a></li><li><a href="module-graphics.html">graphics</a></li><li><a href="module-input.html">input</a></li><li><a href="module-math.html">math</a></li><li><a href="module-scene.html">scene</a></li><li><a href="module-sprite.html">sprite</a></li><li><a href="module-utility.html">utility</a></li><li><a href="module-vector2.html">vector2</a></li></ul><h3>Classes</h3><ul><li><a href="Angle.html">Angle</a></li><li><a href="DebugConsole.html">DebugConsole</a></li><li><a href="module-base-Base.html">Base</a></li><li><a href="module-base-Time.html">Time</a></li><li><a href="module-collision-BoxCollider.html">BoxCollider</a></li><li><a href="module-collision-Collider.html">Collider</a></li><li><a href="module-collision-Edge.html">Edge</a></li><li><a href="module-entity-Entity.html">Entity</a></li><li><a href="module-game-Game.html">Game</a></li><li><a href="module-graphics-Graphics.html">Graphics</a></li><li><a href="module-input-Keyboard.html">Keyboard</a></li><li><a href="module-input-Mouse.html">Mouse</a></li><li><a href="module-scene-Scene.html">Scene</a></li><li><a href="module-sprite-Sprite.html">Sprite</a></li><li><a href="module-sprite-SpriteBoundary.html">SpriteBoundary</a></li><li><a href="module-vector2-Vector2.html">Vector2</a></li></ul><h3>Events</h3><ul><li><a href="Sprite.html#event:SpriteCreated">SpriteCreated</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Mon Dec 06 2021 23:51:28 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

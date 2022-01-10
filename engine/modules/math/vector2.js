@@ -1,112 +1,15 @@
 
-/**
-    A utility class to handle angles.
-    @class
-*/
+/** @module vector2 */
 
-class Angle {
-
-    /** @static {number} TWOPI - Pi multipled by 2 */
-    static TWOPI = Math.PI * 2;
-
-    constructor() {
-        this._degrees = 0;
-        this._radians = 0;
-    }
-
-    /** @prop {number} degrees */
-    set deg(d) { this.setDegrees(d); }
-    get deg() { return this._degrees; }
-
-    setDegrees(deg) {
-
-        if (deg > 360) deg -= 360;
-
-        this._degrees = deg;
-        this._radians = Angle.toRadians(deg);
-    }
-
-    /** @prop {number} radians */
-    set rad(r) { this.setRadians(r); }
-    get rad() { return this._radians; }
-
-    setRadians(rad) {
-
-        if (rad > Angle.TWOPI) rad -= Angle.TWOPI;
-
-        this._radians = rad;
-        this._degrees = Angle.toDegrees(rad);
-    }
-
-    /* STATIC METHODS */
-
-    /**
-        @param {number} degrees
-        @return {number} radians
-        @static
-    */
-    static toRadians(degrees) { return degrees * Math.PI / 180; }
-    /**
-        @param {number} radians
-        @return {number} degrees
-        @static
-    */
-    static toDegrees(radians) { return radians * 180 / Math.PI; }
-} // end Angle
-
-/**
-    Represents a debug console in the page. Appends the console as a child of the specified
-     target_element or the document body if none is provided.
-    @class
-*/
-class DebugConsole {
-    /** @param {Element} target_element - an HTML element in which to construct the debug console. This should probably be a div or some similar element. */
-    constructor(target_element) {
-
-        this._eTarget = document.getElementById(target_element);
-
-        this._eContainer = document.createElement('div');
-        this._sBorder = '1px solid grey';
-
-        this._eContainer.style.border = this._sBorder;
-
-        this._bVisible = false;
-        this._bWriteToSystemConsole = true;
-
-        this._eOutputArea = document.createElement('div');
-
-        this._eOutputArea.style = 'overflow-y: scroll;';
-
-        this._eContainer.appendChild(this._eOutputArea);
-
-        if (!this._eTarget) {
-            document.body.appendChild(this._eContainer);
-        } else {
-            this._eTarget.appendChild(this._eContainer);
-        }
-    }
-
-    set visible(v) { this._bVisible = true; }
-    get visible() { return this._bVisible; }
-
-    log(...args) {
-
-        for (const arg of args) {
-            this._eOutputArea.innerHTML += arg;
-        }
-
-        if (this._bWriteToSystemConsole) { console.log(...args); }
-    }
-} // end DebugConsole
+import { Point } from './coordinate.js'
+import { Angle } from './angle.js';
 
 /**
     Constructs a Vector2.
-
-    A vector2 is a 2-dimensional vector consisting of the components x and y
-
+    A vector2 is a 2-dimensional vector.
     @class
 */
-class Vector2 {
+class Vector2 extends Point {
 
     /**
         @constructs Vector2
@@ -115,6 +18,9 @@ class Vector2 {
         @param {boolean} isPolar - if the vector is expressed in polar coordinates. regardless of this flag's value, cartesian and polar coordinates will be calculated and stored. This flag is only for initialization.
     */
     constructor(a=0, b=0, isPolar = false) {
+
+        super(a,b);
+        // this._tail = 0;
 
         if (isPolar === true) {
             this._r = a;
@@ -150,6 +56,41 @@ class Vector2 {
         this._recalcFromCart();
     }
 
+    /** set coordinates as cartesian or polar
+        @param {number} - x or r
+        @param {number} - y or theta. if polar, theta is in radians
+        @param {boolean=} - polar coordinates or not
+    */
+    setCoords(a, b, isPolar = false) {
+        (isPolar)
+            ? this.setPolar(a, b)
+            : this.setCartesian(a, b);
+    }
+
+    /**
+        set cartesian coordinates
+        @param {number}
+        @param {number}
+    */
+    setCartesian(x, y) {
+        this._x = x;
+        this._y = y;
+
+        this._recalcFromCart();
+    }
+
+    /**
+    set polar coordinates
+    @param {number}
+    @param {number}
+    */
+    setPolar(r, theta) {
+        this._r = r;
+        this.angle = theta;
+
+        this._recalcFromPolar();
+    }
+
     /** @prop {number} r - The vector length */
     get r() { return this._r; }
     set r(val) {
@@ -170,7 +111,9 @@ class Vector2 {
         @param {number} theta - the angle in radians
     */
     setAngle(theta) {
-        (theta > Angle.TWOPI) ? this._angle = theta - Angle.TWOPI : this._angle = theta;
+        (theta > Angle.TWOPI)
+            ? this._angle = theta - Angle.TWOPI
+            : this._angle = theta;
         this._recalcFromPolar();
         return this;
     }
@@ -183,6 +126,29 @@ class Vector2 {
         this.setAngle(this.angle + rad);
         return this;
     }
+
+    /**
+        Rotate around a given point
+        @param {Vector2} focus
+    */
+    rotateAround(focus, amt = Angle.toRadians(1), dist = this.distanceTo(focus)) {
+
+        this.setCartesian(focus.x + (dist * Math.cos(amt)), focus.y + (dist * Math.sin(amt)));
+    }
+
+    /**
+        Get angle to the specified vector
+        @param {Vector2} vec
+        @return {Angle} angle to the specified vector
+    */
+    angleTo(vec) { return Math.atan2(this.y - vec.y, this.x - vec.x); }
+
+    /**
+        Get distance to the specified vector
+        @param {Vector2} vec
+        @return {number} distance between vectors.
+    */
+    distanceTo(vec) { return Math.hypot(this.x - vec.x, this.y - vec.y); }
 
     /** Convenience function to recalculate x and y values based on change in r or angle */
     _recalcFromPolar() {
@@ -208,8 +174,9 @@ class Vector2 {
     addWith(v) {
         try {
             Vector2.validate(v);
-            this.x += v.x;
-            this.y += v.y;
+            this.setCoords(this.x + v.x, this.y + v.y);
+            // this.x += v.x;
+            // this.y += v.y;
 
             return this;
         } catch (e) {
@@ -237,7 +204,7 @@ class Vector2 {
         @return {number|null} The dot product or null if an error occurs.
     */
     dotWith(v) {
-        Vector2.dotProduct(this, v);
+        //Vector2.dotProduct(this, v);
         try {
             Vector2.validate(v);
             return (this.x * v.x) + (this.y + v.y);
@@ -247,8 +214,45 @@ class Vector2 {
         }
     }
 
-    /** @prop {Vector2} unit - A unit vector representation of this Vector2 */
-    get unit() { return new Vector2(this.x / this.mag, this.y / this.mag); }
+    /**
+        Determine if this vector is equal to another vector
+        @param {Vector2} vec - the vector to compare against
+        @return {boolean}
+    */
+    equals(vec) {
+        try {
+            Vector2.validate(vec);
+            return (this.mag == vec.mag) && (this.angle == vec.angle);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    /** @prop {Vector2} unit - A normalized representation of the vector */
+    get unit() { return new Vector2(1, this.angle, true); }
+    // get unit() { return new Vector2(this.x / this.mag, this.y / this.mag); }
+
+    /** @prop {Vector2} normal - a vector normal to this one */
+    get normal() { return new Vector2(-this.y, this.x); }
+
+    /**
+        Calculates the linear interpolation to the target vector
+        @param {Vector2} v_target
+        @param {number} t
+        @return {Vector2|null} Returns a Vector2 of the linear interpolation or null if an error occurs.
+    */
+    lerpTo(v_target, t) {
+        try {
+            Vector2.validate(v_target);
+            // Lerp is given by ((1 - t) * v0) + (t * v1);
+            //console.log(interp, v_target);
+            return this.scaleBy(1-t).addWith(Vector2.scale(v_target, t));
+            // return Vector2.add(Vector2.scale(this, 1 - t), (Vector2.scale(v_target, t)));
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
 
     /**
         Add the components of the specified vectors
@@ -265,6 +269,16 @@ class Vector2 {
         for (const v of vx) temp.addWith(v);
 
         return temp;
+    }
+
+    /**
+        Find the difference between two vectors
+        @param {Vector2}
+        @param {Vector2}
+        @return {Vector2}
+    */
+    static diff(v1, v2) {
+        return new Vector2(v1.x - v2.x, v1.y - v2.y);
     }
 
     /**
@@ -301,6 +315,36 @@ class Vector2 {
     }
 
     /**
+        Get a vector perpendicular to the provided vector
+        @param {Vector2} v
+        @return {Vector2} the normal vector
+        @tatic
+    */
+    static normalTo(v) {
+        try {
+            Vector2.validate(v);
+            return new Vector2(-v.y, v.x);
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    /**
+        Get a unit vector
+        @param {Vector2} v - the vector to normalize
+        @return {Vector2} Returns a vector of length 1 in the same direction as v
+    */
+    static normalize(v) {
+        try {
+            Vector2.validate(v);
+            return new Vector2(1, v.angle, true);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    /**
         Get a vector2 from polar coordinates.
         @param {number} r - radius
         @param {number} theta - angle
@@ -320,14 +364,18 @@ class Vector2 {
     static lerp(v0, v1, t) {
         try {
             Vector2.validate(v0, v1);
-
             // Lerp is given by ((1 - t) * v0) + (t * v1);
+            //return v0.scaleBy(1 - t).addWith(v1.scaleBy(t));
             return Vector2.add(Vector2.scale(v0, 1 - t), (Vector2.scale(v1, t)));
 
         } catch (e) {
             console.log(e);
             return null;
         }
+    }
+
+    static transform(v, mat) {
+
     }
 
     /**
@@ -344,6 +392,14 @@ class Vector2 {
         }
     }
 
+    static random(min_x, max_x, min_y, max_y) {
+        //let x = Math.floor()
+        return new Vector2();
+    }
+
+    /** @prop {Vector2} - zero vector */
+    static get ZERO() { return new Vector2(0,0); }
+
     /**
         @prop {Vector2} I_HAT - The vector <1, 0>
     */
@@ -358,3 +414,5 @@ class Vector2 {
         return new Vector2(0, 1);
     }
 }
+
+export { Vector2 };
